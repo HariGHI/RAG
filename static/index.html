@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RAG Summarizer</title>
+  <style>
+    /* ── Reset & Base ───────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d0d0f;
+      --surface:   #16161a;
+      --surface2:  #1e1e24;
+      --surface3:  #26262e;
+      --border:    #2a2a35;
+      --accent:    #7c6af7;
+      --accent2:   #5ed3f3;
+      --success:   #3ecf8e;
+      --danger:    #f56565;
+      --warning:   #f6ad55;
+      --text:      #e2e8f0;
+      --muted:     #718096;
+      --radius:    10px;
+      --shadow:    0 4px 24px rgba(0,0,0,.45);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Top Bar ───────────────────────────────────────── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      height: 52px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .topbar-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: -.3px;
+    }
+    .topbar-logo .dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+    }
+    .health-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: .8rem;
+      color: var(--muted);
+      padding: 4px 10px;
+      background: var(--surface2);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+    }
+    .health-badge .indicator {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--muted);
+    }
+    .health-badge.ok .indicator   { background: var(--success); }
+    .health-badge.warn .indicator { background: var(--warning); }
+
+    /* ── Layout ────────────────────────────────────────── */
+    .layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── Sidebar ───────────────────────────────────────── */
+    .sidebar {
+      width: 240px;
+      flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .sidebar-header {
+      padding: 14px 16px 10px;
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-create {
+      padding: 12px 12px 8px;
+      display: flex;
+      gap: 6px;
+    }
+    .sidebar-create input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 7px;
+      padding: 7px 10px;
+      font-size: .85rem;
+    }
+    .sidebar-create input:focus { outline: none; border-color: var(--accent); }
+    .btn-icon {
+      background: var(--accent);
+      border: none;
+      color: #fff;
+      border-radius: 7px;
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      transition: opacity .15s;
+    }
+    .btn-icon:hover { opacity: .85; }
+
+    .spaces-list { flex: 1; overflow-y: auto; padding: 4px 8px 8px; }
+    .space-item {
+      display: flex;
+      align-items: center;
+      padding: 9px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 2px;
+      transition: background .12s;
+      gap: 8px;
+      position: relative;
+    }
+    .space-item:hover { background: var(--surface2); }
+    .space-item.active {
+      background: var(--surface3);
+      box-shadow: inset 2px 0 0 var(--accent);
+    }
+    .space-icon {
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: .8rem;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .space-meta { flex: 1; min-width: 0; }
+    .space-name {
+      font-size: .88rem;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .space-stats {
+      font-size: .72rem;
+      color: var(--muted);
+    }
+    .space-delete {
+      opacity: 0;
+      background: none;
+      border: none;
+      color: var(--danger);
+      cursor: pointer;
+      font-size: .9rem;
+      padding: 2px 4px;
+      border-radius: 4px;
+      transition: opacity .15s, background .15s;
+    }
+    .space-item:hover .space-delete { opacity: 1; }
+    .space-delete:hover { background: rgba(245,101,101,.15); }
+
+    .sidebar-empty {
+      padding: 20px 16px;
+      font-size: .82rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* ── Main Panel ────────────────────────────────────── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Tabs ───────────────────────────────────────────── */
+    .tabs {
+      display: flex;
+      gap: 2px;
+      padding: 10px 20px 0;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .tab {
+      padding: 8px 18px;
+      font-size: .87rem;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color .15s, border-color .15s;
+      user-select: none;
+    }
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--text); border-bottom-color: var(--accent); }
+
+    .panel { display: none; flex: 1; overflow: hidden; }
+    .panel.active { display: flex; flex-direction: column; }
+
+    /* ── Empty State ───────────────────────────────────── */
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      gap: 10px;
+      font-size: .9rem;
+    }
+    .empty-state .icon { font-size: 2.5rem; opacity: .4; }
+
+    /* ── Upload Panel ──────────────────────────────────── */
+    .upload-panel { padding: 24px; overflow-y: auto; }
+
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      background: var(--surface2);
+      margin-bottom: 16px;
+    }
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(124,106,247,.06);
+    }
+    .drop-zone input { display: none; }
+    .drop-zone .dz-icon { font-size: 2.2rem; margin-bottom: 8px; opacity: .6; }
+    .drop-zone .dz-text { font-size: .9rem; color: var(--muted); }
+    .drop-zone .dz-sub  { font-size: .78rem; color: var(--muted); margin-top: 4px; }
+
+    .upload-controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .upload-controls select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-size: .87rem;
+      flex: 1;
+      min-width: 180px;
+    }
+    .upload-controls select:focus { outline: none; border-color: var(--accent); }
+
+    .btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 9px 20px;
+      border-radius: 8px;
+      font-size: .87rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: opacity .15s, transform .1s;
+      white-space: nowrap;
+    }
+    .btn:hover { opacity: .88; }
+    .btn:active { transform: scale(.98); }
+    .btn:disabled { opacity: .4; cursor: not-allowed; }
+    .btn.secondary { background: var(--surface3); }
+    .btn.success-btn { background: var(--success); color: #0d0d0f; }
+    .btn.danger-btn { background: var(--danger); }
+
+    .file-queue {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .file-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      background: var(--surface2);
+      border-radius: 8px;
+      font-size: .85rem;
+    }
+    .file-row .file-icon { font-size: 1rem; }
+    .file-row .file-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-row .file-size { color: var(--muted); font-size: .78rem; }
+    .file-row .file-remove { background: none; border: none; color: var(--muted); cursor: pointer; font-size: .9rem; }
+    .file-row .file-remove:hover { color: var(--danger); }
+
+    .result-card {
+      background: var(--surface2);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 8px;
+      border-left: 3px solid var(--success);
+      font-size: .87rem;
+    }
+    .result-card .rc-title { font-weight: 600; margin-bottom: 4px; }
+    .result-card .rc-detail { color: var(--muted); font-size: .8rem; }
+
+    /* ── Vectorize Panel ───────────────────────────────── */
+    .vectorize-panel { padding: 24px; overflow-y: auto; }
+    .vect-card {
+      background: var(--surface2);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 14px;
+    }
+    .vect-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .stat-box {
+      background: var(--surface3);
+      border-radius: 8px;
+      padding: 14px;
+      text-align: center;
+    }
+    .stat-box .stat-num {
+      font-size: 1.6rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .stat-box .stat-label { font-size: .75rem; color: var(--muted); margin-top: 2px; }
+
+    .progress-bar-wrap {
+      background: var(--surface3);
+      border-radius: 20px;
+      height: 6px;
+      overflow: hidden;
+      margin: 10px 0 6px;
+    }
+    .progress-bar {
+      height: 100%;
+      border-radius: 20px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width .4s ease;
+      width: 0%;
+    }
+    .progress-label { font-size: .78rem; color: var(--muted); }
+
+    /* ── Chat Panel ────────────────────────────────────── */
+    .chat-panel {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+    }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .chat-welcome {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      text-align: center;
+      color: var(--muted);
+      gap: 8px;
+      padding: 40px;
+    }
+    .chat-welcome .wl-icon { font-size: 2.8rem; opacity: .35; }
+    .chat-welcome p { font-size: .9rem; max-width: 280px; line-height: 1.6; }
+
+    .msg-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+    .msg-row.user { flex-direction: row-reverse; }
+
+    .msg-avatar {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .78rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .msg-row.user .msg-avatar {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+    }
+    .msg-row.ai .msg-avatar {
+      background: var(--surface3);
+      color: var(--accent);
+    }
+
+    .msg-bubble {
+      max-width: 72%;
+      padding: 11px 15px;
+      border-radius: 16px;
+      font-size: .9rem;
+      line-height: 1.6;
+      word-break: break-word;
+    }
+    .msg-row.user .msg-bubble {
+      background: linear-gradient(135deg, var(--accent), #9b8bfa);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+    .msg-row.ai .msg-bubble {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-bottom-left-radius: 4px;
+    }
+
+    .msg-sources {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .msg-sources-label { font-size: .74rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+    .source-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: .76rem;
+      color: var(--accent2);
+      background: rgba(94,211,243,.08);
+      border: 1px solid rgba(94,211,243,.2);
+      border-radius: 20px;
+      padding: 3px 8px;
+    }
+
+    .typing-dots {
+      display: flex; gap: 4px; align-items: center; padding: 4px 0;
+    }
+    .typing-dots span {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--muted);
+      animation: bounce .9s infinite;
+    }
+    .typing-dots span:nth-child(2) { animation-delay: .15s; }
+    .typing-dots span:nth-child(3) { animation-delay: .3s; }
+    @keyframes bounce {
+      0%,80%,100% { transform: translateY(0); }
+      40%          { transform: translateY(-5px); }
+    }
+
+    .chat-footer {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      flex-shrink: 0;
+    }
+    .chat-input-wrap { flex: 1; position: relative; }
+    .chat-input-wrap textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 11px 14px;
+      font-size: .9rem;
+      resize: none;
+      line-height: 1.5;
+      max-height: 120px;
+      font-family: inherit;
+      transition: border-color .15s;
+    }
+    .chat-input-wrap textarea:focus { outline: none; border-color: var(--accent); }
+    .chat-input-wrap textarea::placeholder { color: var(--muted); }
+    .send-btn {
+      background: linear-gradient(135deg, var(--accent), #9b8bfa);
+      border: none;
+      color: #fff;
+      width: 42px; height: 42px;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+      transition: opacity .15s, transform .1s;
+    }
+    .send-btn:hover { opacity: .88; }
+    .send-btn:active { transform: scale(.94); }
+    .send-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+    /* ── Context limit selector ────────────────────────── */
+    .chat-options {
+      display: flex;
+      gap: 8px;
+      padding: 8px 20px 0;
+      flex-shrink: 0;
+    }
+    .chat-options label { font-size: .78rem; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+    .chat-options select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 3px 7px;
+      border-radius: 6px;
+      font-size: .78rem;
+    }
+
+    /* ── Toast ─────────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--surface3);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: .87rem;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transition: opacity .25s, transform .25s;
+      pointer-events: none;
+      z-index: 999;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.success { border-color: var(--success); }
+    .toast.error   { border-color: var(--danger); }
+
+    /* ── Spinner ───────────────────────────────────────── */
+    .spin {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Scrollbar ─────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--border); }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="topbar-logo">
+      <div class="dot"></div>
+      RAG Summarizer
+    </div>
+    <div class="health-badge" id="healthBadge">
+      <div class="indicator"></div>
+      <span id="healthText">checking…</span>
+    </div>
+  </div>
+
+  <div class="layout">
+
+    <!-- Sidebar: Spaces -->
+    <div class="sidebar">
+      <div class="sidebar-header">Spaces</div>
+      <div class="sidebar-create">
+        <input type="text" id="newSpaceName" placeholder="New space name…" onkeydown="if(event.key==='Enter')createSpace()" />
+        <button class="btn-icon" onclick="createSpace()" title="Create space">+</button>
+      </div>
+      <div class="spaces-list" id="spacesList">
+        <div class="sidebar-empty">Loading…</div>
+      </div>
+    </div>
+
+    <!-- Main -->
+    <div class="main">
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('upload')"   id="tab-upload">Upload</div>
+        <div class="tab"        onclick="switchTab('vectorize')" id="tab-vectorize">Vectorize</div>
+        <div class="tab"        onclick="switchTab('chat')"     id="tab-chat">Chat</div>
+      </div>
+
+      <!-- ── Upload Panel ── -->
+      <div class="panel active upload-panel" id="panel-upload">
+        <div id="no-space-upload" class="empty-state">
+          <div class="icon">📁</div>
+          <p>Select or create a space to upload documents.</p>
+        </div>
+        <div id="upload-content" style="display:none">
+          <div
+            class="drop-zone"
+            id="dropZone"
+            onclick="document.getElementById('fileInput').click()"
+            ondragover="onDragOver(event)"
+            ondragleave="onDragLeave(event)"
+            ondrop="onDrop(event)"
+          >
+            <div class="dz-icon">&#8679;</div>
+            <div class="dz-text">Drag & drop files here, or click to browse</div>
+            <div class="dz-sub">Supports .md · .markdown · .txt</div>
+            <input type="file" id="fileInput" multiple accept=".md,.markdown,.txt" onchange="addFiles(this.files)" />
+          </div>
+
+          <div class="file-queue" id="fileQueue"></div>
+
+          <div class="upload-controls">
+            <select id="chunkStrategy">
+              <option value="semantic">Semantic — structure-aware (recommended)</option>
+              <option value="markdown_header">By Markdown Headers</option>
+              <option value="paragraph">By Paragraphs</option>
+              <option value="sentence">By Sentences</option>
+              <option value="fixed_size">Fixed Size</option>
+            </select>
+            <button class="btn" id="uploadBtn" onclick="uploadFiles()">
+              Upload &amp; Chunk
+            </button>
+          </div>
+
+          <div id="uploadResults"></div>
+        </div>
+      </div>
+
+      <!-- ── Vectorize Panel ── -->
+      <div class="panel vectorize-panel" id="panel-vectorize">
+        <div id="no-space-vect" class="empty-state">
+          <div class="icon">&#9889;</div>
+          <p>Select a space to manage embeddings.</p>
+        </div>
+        <div id="vect-content" style="display:none">
+          <div class="vect-card">
+            <div class="vect-stats" id="vectStats">
+              <div class="stat-box"><div class="stat-num" id="statChunks">–</div><div class="stat-label">Chunks</div></div>
+              <div class="stat-box"><div class="stat-num" id="statVectors">–</div><div class="stat-label">Vectors</div></div>
+              <div class="stat-box"><div class="stat-num" id="statPct">–</div><div class="stat-label">Embedded</div></div>
+            </div>
+
+            <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+            <div class="progress-label" id="progressLabel">Not yet vectorized</div>
+
+            <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+              <button class="btn success-btn" id="embedBtn" onclick="embedAll(false)">
+                Vectorize Chunks
+              </button>
+              <button class="btn secondary" id="reEmbedBtn" onclick="embedAll(true)">
+                Re-embed All
+              </button>
+              <button class="btn secondary" onclick="refreshVectStats()">
+                Refresh
+              </button>
+            </div>
+
+            <div id="vectStatus" style="margin-top:12px;font-size:.85rem;color:var(--muted)"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Chat Panel ── -->
+      <div class="panel chat-panel" id="panel-chat">
+        <div id="no-space-chat" class="empty-state">
+          <div class="icon">&#128172;</div>
+          <p>Select a space and start a conversation with your documents.</p>
+        </div>
+        <div id="chat-content" style="display:contents">
+          <div class="chat-options">
+            <label>
+              Context chunks:
+              <select id="contextLimit">
+                <option value="3">3</option>
+                <option value="5" selected>5</option>
+                <option value="8">8</option>
+                <option value="10">10</option>
+              </select>
+            </label>
+            <label>
+              Search mode:
+              <select id="retrievalMode">
+                <option value="hybrid" selected>Hybrid</option>
+                <option value="vector">Vector</option>
+                <option value="fts">Full-text</option>
+              </select>
+            </label>
+            <button class="btn secondary" style="padding:4px 10px;font-size:.78rem" onclick="clearChat()">Clear</button>
+          </div>
+          <div class="chat-messages" id="chatMessages">
+            <div class="chat-welcome" id="chatWelcome">
+              <div class="wl-icon">&#128172;</div>
+              <p>Upload and vectorize documents, then ask anything about them.</p>
+            </div>
+          </div>
+          <div class="chat-footer">
+            <div class="chat-input-wrap">
+              <textarea
+                id="chatInput"
+                rows="1"
+                placeholder="Ask a question about your documents…"
+                onkeydown="onChatKey(event)"
+                oninput="autoResize(this)"
+              ></textarea>
+            </div>
+            <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="Send (Enter)">&#10148;</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /main -->
+  </div><!-- /layout -->
+
+  <div class="toast" id="toast"></div>
+
+<script>
+/* ── State ─────────────────────────────────────────────── */
+const API = '';
+let activeSpace = null;
+let pendingFiles = [];
+
+/* ── Init ──────────────────────────────────────────────── */
+window.addEventListener('DOMContentLoaded', () => {
+  loadSpaces();
+  checkHealth();
+  setInterval(checkHealth, 15000);
+});
+
+/* ── Health ────────────────────────────────────────────── */
+async function checkHealth() {
+  try {
+    const r = await fetch(`${API}/health`);
+    const d = await r.json();
+    const badge = document.getElementById('healthBadge');
+    const text  = document.getElementById('healthText');
+    badge.className = 'health-badge ' + (d.status === 'ok' ? 'ok' : 'warn');
+    text.textContent = d.status === 'ok'
+      ? `${d.model} · online`
+      : `ollama offline`;
+  } catch {
+    document.getElementById('healthBadge').className = 'health-badge';
+    document.getElementById('healthText').textContent = 'server offline';
+  }
+}
+
+/* ── Tabs ──────────────────────────────────────────────── */
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+  if (name === 'vectorize' && activeSpace) refreshVectStats();
+}
+
+/* ── Spaces ────────────────────────────────────────────── */
+async function loadSpaces() {
+  try {
+    const r = await fetch(`${API}/spaces`);
+    const d = await r.json();
+    renderSpaces(d.spaces || []);
+  } catch (e) {
+    document.getElementById('spacesList').innerHTML =
+      '<div class="sidebar-empty">Could not load spaces.</div>';
+  }
+}
+
+function renderSpaces(spaces) {
+  const el = document.getElementById('spacesList');
+  if (!spaces.length) {
+    el.innerHTML = '<div class="sidebar-empty">No spaces yet.<br/>Create one above.</div>';
+    return;
+  }
+  el.innerHTML = spaces.map(s => {
+    const letter = s.name.charAt(0).toUpperCase();
+    const isActive = activeSpace && activeSpace.uuid === s.uuid;
+    return `
+      <div class="space-item ${isActive ? 'active' : ''}" id="si-${s.uuid}" onclick="selectSpace('${s.uuid}','${esc(s.name)}')">
+        <div class="space-icon">${letter}</div>
+        <div class="space-meta">
+          <div class="space-name">${esc(s.name)}</div>
+          <div class="space-stats">${s.chunk_count||0} chunks</div>
+        </div>
+        <button class="space-delete" onclick="deleteSpace(event,'${s.uuid}')" title="Delete">&#10005;</button>
+      </div>`;
+  }).join('');
+}
+
+async function createSpace() {
+  const input = document.getElementById('newSpaceName');
+  const name = input.value.trim();
+  if (!name) { toast('Enter a space name', 'error'); return; }
+  try {
+    const r = await fetch(`${API}/spaces`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ name })
+    });
+    if (!r.ok) throw new Error((await r.json()).detail);
+    input.value = '';
+    await loadSpaces();
+    toast('Space created', 'success');
+  } catch (e) {
+    toast(e.message || 'Failed to create', 'error');
+  }
+}
+
+async function deleteSpace(evt, uuid) {
+  evt.stopPropagation();
+  if (!confirm('Delete this space and all its data?')) return;
+  try {
+    await fetch(`${API}/spaces/${uuid}`, { method: 'DELETE' });
+    if (activeSpace && activeSpace.uuid === uuid) {
+      activeSpace = null;
+      updateSpaceContext();
+    }
+    await loadSpaces();
+    toast('Space deleted');
+  } catch { toast('Delete failed', 'error'); }
+}
+
+function selectSpace(uuid, name) {
+  activeSpace = { uuid, name };
+  document.querySelectorAll('.space-item').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById(`si-${uuid}`);
+  if (el) el.classList.add('active');
+  updateSpaceContext();
+  const activeTab = document.querySelector('.tab.active')?.id?.replace('tab-','');
+  if (activeTab === 'vectorize') refreshVectStats();
+  toast(`Switched to "${name}"`);
+}
+
+function updateSpaceContext() {
+  const has = !!activeSpace;
+  ['upload','vect','chat'].forEach(k => {
+    const noSp = document.getElementById(`no-space-${k}`);
+    const cont  = document.getElementById(k === 'chat' ? 'chat-content' : `${k}-content`);
+    if (noSp) noSp.style.display = has ? 'none' : 'flex';
+    if (cont) cont.style.display = has ? (k === 'chat' ? 'contents' : 'block') : 'none';
+  });
+}
+
+/* ── Upload ────────────────────────────────────────────── */
+function onDragOver(e)  { e.preventDefault(); document.getElementById('dropZone').classList.add('drag-over'); }
+function onDragLeave(e) { document.getElementById('dropZone').classList.remove('drag-over'); }
+function onDrop(e)      { e.preventDefault(); onDragLeave(e); addFiles(e.dataTransfer.files); }
+
+function addFiles(files) {
+  const allowed = ['.md','.markdown','.txt'];
+  Array.from(files).forEach(f => {
+    const ext = f.name.slice(f.name.lastIndexOf('.')).toLowerCase();
+    if (!allowed.includes(ext)) { toast(`Skipped ${f.name} (unsupported type)`, 'error'); return; }
+    if (!pendingFiles.find(p => p.name === f.name)) pendingFiles.push(f);
+  });
+  renderFileQueue();
+}
+
+function removeFile(name) {
+  pendingFiles = pendingFiles.filter(f => f.name !== name);
+  renderFileQueue();
+}
+
+function renderFileQueue() {
+  const el = document.getElementById('fileQueue');
+  el.innerHTML = pendingFiles.map(f => `
+    <div class="file-row">
+      <span class="file-icon">&#128196;</span>
+      <span class="file-name">${esc(f.name)}</span>
+      <span class="file-size">${(f.size/1024).toFixed(1)} KB</span>
+      <button class="file-remove" onclick="removeFile('${esc(f.name)}')">&#10005;</button>
+    </div>`).join('');
+}
+
+async function uploadFiles() {
+  if (!activeSpace) { toast('Select a space first', 'error'); return; }
+  if (!pendingFiles.length) { toast('Add files first', 'error'); return; }
+
+  const btn = document.getElementById('uploadBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Processing…';
+
+  const formData = new FormData();
+  pendingFiles.forEach(f => formData.append('files', f));
+  formData.append('chunk_strategy', document.getElementById('chunkStrategy').value);
+
+  try {
+    const r = await fetch(`${API}/spaces/${activeSpace.uuid}/artifacts`, {
+      method: 'POST', body: formData
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || 'Upload failed');
+
+    const el = document.getElementById('uploadResults');
+    el.innerHTML = (d.artifacts || []).map(a => `
+      <div class="result-card">
+        <div class="rc-title">&#10003; ${esc(a.file_name)}</div>
+        <div class="rc-detail">${a.chunk_count} chunks &nbsp;·&nbsp; artifact <code>${a.artifact_id.slice(0,8)}…</code></div>
+      </div>`).join('');
+
+    pendingFiles = [];
+    renderFileQueue();
+    document.getElementById('fileInput').value = '';
+    toast(`Uploaded ${d.artifacts?.length || 0} file(s) — ${d.total_chunks} chunks`, 'success');
+    await loadSpaces();
+  } catch (e) {
+    toast(e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Upload &amp; Chunk';
+  }
+}
+
+/* ── Vectorize ─────────────────────────────────────────── */
+async function refreshVectStats() {
+  if (!activeSpace) return;
+  try {
+    const [chunksR, vectsR] = await Promise.all([
+      fetch(`${API}/spaces/${activeSpace.uuid}/artifacts`),
+      fetch(`${API}/spaces/${activeSpace.uuid}/vectors`)
+    ]);
+    const chunksD = await chunksR.json();
+    const vectsD  = await vectsR.json();
+
+    const totalChunks  = (chunksD.artifacts||[]).reduce((s,a)=>s+a.chunk_count,0);
+    const totalVectors = vectsD.total || 0;
+    const pct = totalChunks ? Math.round(totalVectors/totalChunks*100) : 0;
+
+    document.getElementById('statChunks').textContent  = totalChunks;
+    document.getElementById('statVectors').textContent = totalVectors;
+    document.getElementById('statPct').textContent     = pct + '%';
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('progressLabel').textContent =
+      pct === 100 ? 'All chunks vectorized' :
+      pct === 0   ? 'No vectors yet — click Vectorize' :
+      `${totalVectors} / ${totalChunks} chunks vectorized`;
+  } catch { /* ignore */ }
+}
+
+async function embedAll(reEmbed = false) {
+  if (!activeSpace) return;
+  const btn = reEmbed ? document.getElementById('reEmbedBtn') : document.getElementById('embedBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Embedding…';
+  document.getElementById('vectStatus').textContent = 'Generating embeddings…';
+
+  try {
+    const r = await fetch(`${API}/spaces/${activeSpace.uuid}/vectors/embed`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ re_embed: reEmbed })
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail);
+
+    document.getElementById('vectStatus').textContent =
+      `${d.chunks_embedded} embedded · ${d.chunks_skipped} skipped`;
+    toast(d.message, 'success');
+    await refreshVectStats();
+  } catch (e) {
+    document.getElementById('vectStatus').textContent = '';
+    toast(e.message || 'Embedding failed', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = reEmbed ? 'Re-embed All' : 'Vectorize Chunks';
+  }
+}
+
+/* ── Chat ──────────────────────────────────────────────── */
+function onChatKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function clearChat() {
+  document.getElementById('chatMessages').innerHTML = `
+    <div class="chat-welcome" id="chatWelcome">
+      <div class="wl-icon">&#128172;</div>
+      <p>Upload and vectorize documents, then ask anything about them.</p>
+    </div>`;
+}
+
+function appendMsg(role, content, sources) {
+  const wrap = document.getElementById('chatMessages');
+  const welcome = document.getElementById('chatWelcome');
+  if (welcome) welcome.remove();
+
+  const isUser = role === 'user';
+  const avatar = isUser ? 'U' : 'AI';
+
+  let sourcesHtml = '';
+  if (sources && sources.length) {
+    const chips = sources.map(s => {
+      const label = s.file_name || s.file || 'unknown';
+      return `<span class="source-chip">&#128196; ${esc(label)}</span>`;
+    }).join(' ');
+    sourcesHtml = `<div class="msg-sources">
+      <div class="msg-sources-label">Sources</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">${chips}</div>
+    </div>`;
+  }
+
+  const id = 'msg-' + Date.now();
+  const html = `
+    <div class="msg-row ${isUser ? 'user' : 'ai'}" id="${id}">
+      <div class="msg-avatar">${avatar}</div>
+      <div class="msg-bubble">${fmtText(content)}${sourcesHtml}</div>
+    </div>`;
+  wrap.insertAdjacentHTML('beforeend', html);
+  wrap.scrollTop = wrap.scrollHeight;
+  return id;
+}
+
+function addTypingIndicator() {
+  const wrap = document.getElementById('chatMessages');
+  const id = 'typing-' + Date.now();
+  wrap.insertAdjacentHTML('beforeend', `
+    <div class="msg-row ai" id="${id}">
+      <div class="msg-avatar">AI</div>
+      <div class="msg-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>
+    </div>`);
+  wrap.scrollTop = wrap.scrollHeight;
+  return id;
+}
+
+async function sendMessage() {
+  if (!activeSpace) { toast('Select a space first', 'error'); return; }
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  const sendBtn = document.getElementById('sendBtn');
+  sendBtn.disabled = true;
+  input.value = '';
+  input.style.height = 'auto';
+
+  appendMsg('user', msg);
+  const typingId = addTypingIndicator();
+
+  try {
+    const r = await fetch(`${API}/spaces/${activeSpace.uuid}/generate`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        query: msg,
+        context_limit: parseInt(document.getElementById('contextLimit').value),
+        retrieval_mode: document.getElementById('retrievalMode').value,
+        temperature: 0.7
+      })
+    });
+    const d = await r.json();
+    document.getElementById(typingId)?.remove();
+
+    if (!r.ok) throw new Error(d.detail || 'Generation failed');
+    appendMsg('ai', d.answer, d.sources || []);
+  } catch (e) {
+    document.getElementById(typingId)?.remove();
+    appendMsg('ai', `Error: ${e.message}`);
+  } finally {
+    sendBtn.disabled = false;
+  }
+}
+
+/* ── Utilities ─────────────────────────────────────────── */
+function esc(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function fmtText(str) {
+  // Basic markdown-ish: newlines, **bold**, `code`
+  return esc(str)
+    .replace(/\n/g, '<br>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`([^`]+)`/g, '<code style="background:var(--surface3);padding:1px 5px;border-radius:4px;font-size:.87em">$1</code>');
+}
+
+let _toastTimer;
+function toast(msg, type='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+</script>
+</body>
+</html>
