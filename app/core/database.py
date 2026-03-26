@@ -251,11 +251,11 @@ class VectorStoreManager:
         return lancedb.connect(str(db_path))
     
     def _get_table_name(self, space_uuid: str) -> str:
-        """Table name is same as space_uuid"""
-        return space_uuid
-    
+        """Table name encodes both space and model: {space_uuid}_{model_uuid}"""
+        return f"{space_uuid}_{settings.embedding_model_id}"
+
     # ==================== CREATE ====================
-    
+
     def create_table(self, space_uuid: str, initial_data: Optional[List[Dict]] = None) -> bool:
         """
         Create a new vector store for a space

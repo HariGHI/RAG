@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     
     # Embeddings
     embedding_model: str = "all-MiniLM-L6-v2"
+    embedding_model_id: str = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"  # UUID for all-MiniLM-L6-v2
     
     # LLM (Ollama)
     ollama_host: str = "http://localhost:11434"
