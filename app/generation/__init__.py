@@ -1,12 +1,10 @@
-from .router import router
-from .service import generation_service
-from .schemas import (
+from .generation_router import router
+from .generation_service import generation_service
+from .generation_datamodel import (
     GenerateRequest,
     GenerateResponse,
     SummarizeRequest,
     SummarizeResponse,
-    CompareRequest,
-    CompareResponse,
     SourceInfo,
 )
 
@@ -17,7 +15,5 @@ __all__ = [
     "GenerateResponse",
     "SummarizeRequest",
     "SummarizeResponse",
-    "CompareRequest",
-    "CompareResponse",
     "SourceInfo",
 ]

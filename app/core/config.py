@@ -1,6 +1,9 @@
 """
 Application Configuration
-Loads settings from environment variables
+Central settings object loaded from environment variables (or .env file).
+
+Override any default by setting the corresponding env variable, e.g.:
+    OLLAMA_MODEL=llama3.2 python -m uvicorn app.main:app
 """
 
 from pydantic_settings import BaseSettings
@@ -8,7 +11,16 @@ from pathlib import Path
 
 
 class Settings(BaseSettings):
-    """Application settings loaded from environment"""
+    """
+    Application settings with sensible defaults for local development.
+
+    Groups:
+      Server       — host, port, debug flag
+      Storage      — local filesystem paths for LanceDB tables and uploads
+      Embeddings   — SentenceTransformer model name and its stable UUID
+      LLM (Ollama) — Ollama base URL and model name
+      Chunking     — default chunk_size and chunk_overlap in characters
+    """
     
     # Server
     host: str = "0.0.0.0"
@@ -30,14 +42,21 @@ class Settings(BaseSettings):
     
     # Chunking
     chunk_size: int = 500
-    chunk_overlap: int = 50
+    chunk_overlap: int = 100
     
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
     
     def ensure_directories(self):
-        """Create storage directories if they don't exist"""
+        """
+        Create all required storage directories if they don't already exist.
+
+        Called once at application startup (lifespan). Directories are:
+          fs/plaintables/  — LanceDB plain tables (chunks + FTS index)
+          fs/vector_stores/ — LanceDB vector stores (embeddings)
+          uploads/         — raw uploaded files (currently unused but reserved)
+        """
         self.plaintables_path.mkdir(parents=True, exist_ok=True)
         self.vector_stores_path.mkdir(parents=True, exist_ok=True)
         self.uploads_path.mkdir(parents=True, exist_ok=True)

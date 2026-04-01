@@ -1,6 +1,11 @@
 """
 Spaces Service
-Business logic for managing spaces
+Business logic for creating and managing spaces.
+
+A space is an isolated workspace that groups together uploaded files,
+their text chunks, and the corresponding embedding vectors. Space
+metadata (name, description, artifact list) is persisted in a simple
+JSON file alongside the LanceDB database directories.
 """
 
 import json
@@ -111,7 +116,13 @@ class SpaceService:
         return space_uuid in metadata
     
     def _enrich_space_data(self, space_data: Dict) -> Dict:
-        """Add computed fields to space data"""
+        """
+        Attach live counts to a space metadata dict.
+
+        Reads the plain table to count distinct artifact IDs and total
+        chunks. These are computed on every read rather than stored, so
+        they always reflect the current database state.
+        """
         space_uuid = space_data["uuid"]
         
         # Get counts

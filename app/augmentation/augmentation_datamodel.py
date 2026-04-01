@@ -1,12 +1,18 @@
 """
-Augmentation Schemas
-Pydantic models for prompt augmentation
+Augmentation Datamodels
+Pydantic models for the augmentation step of the RAG pipeline.
+
+Augmentation sits between retrieval and generation:
+  Retrieval → [Augmentation] → Generation
+
+It assembles retrieved chunks into a structured context block and
+composes the system + user messages that will be sent to the LLM.
 """
 
 from pydantic import BaseModel, Field
 from typing import Optional, List
 
-from app.retrieval.schemas import RetrievalMode
+from app.retrieval.retrieval_datamodel import RetrievalMode
 
 
 class AugmentRequest(BaseModel):

@@ -264,6 +264,28 @@ class MarkdownChunker:
         strategy: ChunkStrategy = ChunkStrategy.SEMANTIC,
         **kwargs,
     ) -> List[Chunk]:
+        """
+        Split markdown text into a list of Chunk objects.
+
+        Frontmatter (--- ... ---) is stripped automatically before any
+        strategy runs. The strategy is dispatched to the corresponding
+        private method:
+
+          semantic / recursive — structure-aware (recommended for most docs)
+          markdown_header      — one chunk per heading section
+          paragraph            — one chunk per blank-line-separated paragraph
+          sentence             — groups of N sentences
+          fixed_size           — hard character-count windows with overlap
+
+        Args:
+            text:     Raw markdown string to chunk.
+            strategy: Splitting strategy (default: SEMANTIC).
+            **kwargs: Extra options forwarded to the strategy (e.g. chunk_size,
+                      overlap, sentences_per_chunk, max_header_level).
+
+        Returns:
+            List of Chunk dataclasses with text, title, parent_title, and metadata.
+        """
         # Strip frontmatter first
         text = strip_frontmatter(text)
 

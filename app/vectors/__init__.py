@@ -1,13 +1,10 @@
-from .router import router
-from .service import vector_service
-from .schemas import (
+from .vectors_router import router
+from .vectors_service import vector_service
+from .vectors_datamodel import (
     EmbedRequest,
     EmbedResponse,
-    VectorCreate,
-    VectorUpdate,
     VectorInfo,
     VectorListResponse,
-    VectorDeleteResponse,
 )
 
 __all__ = [
@@ -15,9 +12,7 @@ __all__ = [
     "vector_service",
     "EmbedRequest",
     "EmbedResponse",
-    "VectorCreate",
-    "VectorUpdate",
     "VectorInfo",
     "VectorListResponse",
-    "VectorDeleteResponse",
 ]
+

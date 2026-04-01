@@ -1,6 +1,12 @@
 """
 Vectors Service
-Business logic for embedding chunks and managing vector store
+Business logic for the vectorization step of the RAG pipeline.
+
+This module is responsible for taking the text chunks stored in the plain
+table and converting them into numerical embeddings so they can be searched
+by semantic similarity. Embeddings are produced by the all-MiniLM-L6-v2
+SentenceTransformer model (384-dimensional float vectors) and stored in a
+separate LanceDB vector store per space.
 """
 
 from typing import List, Optional, Dict, Set
@@ -12,11 +18,17 @@ from app.core.logger import log_step, log_success, log_embed, log_db
 
 class VectorService:
     """
-    Service for managing vectors (embeddings)
-    
-    Handles:
-    - Generating embeddings for chunks
-    - CRUD operations on vector store
+    Handles all embedding operations for a space.
+
+    RAG pipeline step:  Artifacts → Chunks → [Vectors] → Retrieval
+                                               ^^^^^^^^
+                                               This service
+
+    Responsibilities:
+    - Read chunks from the plain table
+    - Generate embeddings in batch using SentenceTransformers
+    - Write vector records to the LanceDB vector store
+    - Skip already-embedded chunks unless re_embed is requested
     """
     
     # ==================== EMBED ====================
@@ -28,15 +40,23 @@ class VectorService:
         re_embed: bool = False
     ) -> Dict:
         """
-        Generate embeddings for chunks in a space
-        
+        Generate embeddings for all (or selected) chunks in a space.
+
+        Flow:
+          1. Load all chunks from the plain table.
+          2. Optionally filter to the requested artifact_ids.
+          3. Skip chunks that already have a vector (unless re_embed=True).
+          4. Batch-encode the remaining chunk texts.
+          5. Write vector records (chunk_id, text, vector, metadata) to
+             the LanceDB vector store.
+
         Args:
-            space_uuid: Target space UUID
-            artifact_ids: Specific artifacts to embed (None = all)
-            re_embed: If True, re-embed existing vectors
-            
+            space_uuid:   Target space UUID.
+            artifact_ids: Embed only these artifacts; None = embed all.
+            re_embed:     When True, delete and re-create existing vectors.
+
         Returns:
-            Summary of embedding operation
+            Dict with chunks_embedded, chunks_skipped, and a status message.
         """
         log_step("🧠 Embed", f"Starting embedding for space: {space_uuid[:8]}...")
         
@@ -122,87 +142,20 @@ class VectorService:
         }
     
     # ==================== READ ====================
-    
+
     def list_vectors(self, space_uuid: str) -> List[Dict]:
-        """List all vectors in a space (without vector data)"""
+        """
+        Return all vector records for a space, excluding the raw embedding data.
+
+        The actual float arrays are stripped to keep responses readable.
+        Each record includes chunk_id, chunk text, artifact_id, and file_name.
+        """
         return vector_store_manager.get_all_vectors(space_uuid)
-    
+
     def vector_exists(self, space_uuid: str, chunk_id: str) -> bool:
-        """Check if a vector exists for a chunk"""
+        """Return True if the given chunk already has an embedding in the vector store."""
         vectors = vector_store_manager.get_all_vectors(space_uuid)
         return any(v.get("chunk_id") == chunk_id for v in vectors)
-    
-    # ==================== CREATE (Manual) ====================
-    
-    def create_vector(
-        self,
-        space_uuid: str,
-        chunk_id: str,
-        chunk: str,
-        artifact_id: str,
-        file_name: str
-    ) -> Dict:
-        """
-        Manually create a vector for a chunk
-        
-        Generates embedding and inserts into vector store
-        """
-        # Generate embedding
-        embedding = embedding_model.embed_text(chunk)
-        
-        # Insert into vector store
-        vector_store_manager.insert_vectors(space_uuid, [{
-            "chunk_id": chunk_id,
-            "chunk": chunk,
-            "vector": embedding,
-            "artifact_id": artifact_id,
-            "file_name": file_name,
-        }])
-        
-        return {
-            "chunk_id": chunk_id,
-            "chunk": chunk,
-            "artifact_id": artifact_id,
-            "file_name": file_name,
-            "has_vector": True,
-        }
-    
-    # ==================== UPDATE ====================
-    
-    def update_vector(
-        self,
-        space_uuid: str,
-        chunk_id: str,
-        new_chunk: Optional[str] = None
-    ) -> bool:
-        """
-        Update (re-embed) a vector
-        
-        If new_chunk is provided, uses that text. Otherwise, fetches from plain table.
-        """
-        # Get chunk text
-        if new_chunk is None:
-            chunk_data = plain_table_manager.get_chunk_by_id(space_uuid, chunk_id)
-            if not chunk_data:
-                return False
-            new_chunk = chunk_data.get("chunk", "")
-        
-        # Generate new embedding
-        new_embedding = embedding_model.embed_text(new_chunk)
-        
-        # Update in vector store
-        return vector_store_manager.update_vector(
-            space_uuid=space_uuid,
-            chunk_id=chunk_id,
-            new_vector=new_embedding,
-            new_text=new_chunk
-        )
-    
-    # ==================== DELETE ====================
-    
-    def delete_vector(self, space_uuid: str, chunk_id: str) -> bool:
-        """Delete a vector by chunk_id"""
-        return vector_store_manager.delete_vector(space_uuid, chunk_id)
 
 
 # ==================== GLOBAL INSTANCE ====================

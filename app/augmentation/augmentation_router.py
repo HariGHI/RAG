@@ -8,10 +8,10 @@ before calling the generation endpoint.
 
 from fastapi import APIRouter, HTTPException, status
 
-from app.spaces.service import space_service
+from app.spaces.spaces_service import space_service
 
-from .schemas import AugmentRequest, AugmentResponse, SourcePreview
-from .service import augmentation_service
+from .augmentation_datamodel import AugmentRequest, AugmentResponse, SourcePreview
+from .augmentation_service import augmentation_service
 
 
 router = APIRouter(prefix="/spaces/{space_uuid}/augment", tags=["Augmentation"])

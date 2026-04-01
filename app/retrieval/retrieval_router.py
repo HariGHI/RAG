@@ -5,21 +5,22 @@ API endpoints for retrieving relevant chunks
 
 from fastapi import APIRouter, HTTPException, status
 
-from app.spaces.service import space_service
+from app.spaces.spaces_service import space_service
 
-from .schemas import (
+from .retrieval_datamodel import (
     RetrievalRequest,
     RetrievalResponse,
     RetrievalResult,
     RetrievalMode,
 )
-from .service import retrieval_service
+from .retrieval_service import retrieval_service
 
 
 router = APIRouter(prefix="/spaces/{space_uuid}/retrieve", tags=["Retrieval"])
 
 
 def _build_results(results: list) -> list[RetrievalResult]:
+    """Convert raw service dicts into typed RetrievalResult Pydantic models."""
     return [
         RetrievalResult(
             chunk_id=r.get("chunk_id", ""),

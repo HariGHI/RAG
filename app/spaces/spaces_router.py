@@ -5,13 +5,13 @@ API endpoints for managing spaces
 
 from fastapi import APIRouter, HTTPException, status
 
-from .schemas import (
+from .spaces_datamodel import (
     SpaceCreate,
     SpaceResponse,
     SpaceListResponse,
     SpaceDeleteResponse,
 )
-from .service import space_service
+from .spaces_service import space_service
 
 
 router = APIRouter(prefix="/spaces", tags=["Spaces"])
@@ -51,28 +51,14 @@ def create_space(body: SpaceCreate):
     description="Get a list of all spaces with their metadata"
 )
 def list_spaces():
-    """List all available spaces"""
+    """
+    Return all spaces sorted by creation date (newest first).
+
+    Each space includes computed counts for artifacts and chunks so the
+    UI can show progress without additional requests.
+    """
     spaces = space_service.list_spaces()
     return SpaceListResponse(spaces=spaces, total=len(spaces))
-
-
-@router.get(
-    "/{space_uuid}",
-    response_model=SpaceResponse,
-    summary="Get space details",
-    description="Get detailed information about a specific space"
-)
-def get_space(space_uuid: str):
-    """Get a space by UUID"""
-    space = space_service.get_space(space_uuid)
-    
-    if not space:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Space not found: {space_uuid}"
-        )
-    
-    return space
 
 
 # ==================== DELETE ====================

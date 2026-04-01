@@ -12,7 +12,7 @@ from app.core.config import settings
 from app.core.database import plain_table_manager, vector_store_manager
 from app.core.logger import log_step, log_success, log_chunk, log_db
 from app.utils.chunker import markdown_chunker, ChunkStrategy
-from app.spaces.service import space_service
+from app.spaces.spaces_service import space_service
 
 
 class ArtifactService:
@@ -210,6 +210,15 @@ class ArtifactService:
             "chunks": chunk_infos,
         }
     
+    def get_artifact_content(self, space_uuid: str, artifact_id: str) -> Optional[Dict]:
+        """Reconstruct file content from stored chunks for download"""
+        chunks = plain_table_manager.get_chunks_by_artifact(space_uuid, artifact_id)
+        if not chunks:
+            return None
+        file_name = chunks[0].get("file_name", "download.md")
+        content = "\n\n".join(c.get("chunk", "") for c in chunks)
+        return {"file_name": file_name, "content": content}
+
     def artifact_exists(self, space_uuid: str, artifact_id: str) -> bool:
         """Check if an artifact exists"""
         chunks = plain_table_manager.get_chunks_by_artifact(space_uuid, artifact_id)

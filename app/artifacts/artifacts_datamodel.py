@@ -1,6 +1,10 @@
 """
-Artifacts Schemas
-Pydantic models for file upload request/response
+Artifacts Datamodels
+Pydantic models for artifact (file) upload and management.
+
+An "artifact" is a markdown file uploaded to a space. On upload the file
+is parsed, split into chunks using the selected strategy, and each chunk
+is stored in the plain LanceDB table for FTS and later vectorization.
 """
 
 from pydantic import BaseModel, Field

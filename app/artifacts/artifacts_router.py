@@ -4,84 +4,26 @@ API endpoints for uploading and managing artifacts (markdown files)
 """
 
 from typing import List, Optional
-from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Query, status
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form, status
+from fastapi.responses import Response
 
-from app.spaces.service import space_service
+from app.spaces.spaces_service import space_service
 from app.utils.chunker import ChunkStrategy
 
-from .schemas import (
+from .artifacts_datamodel import (
     ChunkStrategyEnum,
     ArtifactResponse,
     ArtifactListResponse,
     ArtifactDeleteResponse,
     UploadResponse,
 )
-from .service import artifact_service
+from .artifacts_service import artifact_service
 
 
 router = APIRouter(prefix="/spaces/{space_uuid}/artifacts", tags=["Artifacts"])
 
 
-# ==================== SINGLE FILE UPLOAD (Swagger-friendly) ====================
-
-@router.post(
-    "/upload",
-    response_model=UploadResponse,
-    status_code=status.HTTP_201_CREATED,
-    summary="Upload a markdown file",
-    description="Upload a single markdown file. Use this endpoint for easy Swagger testing."
-)
-async def upload_single_artifact(
-    space_uuid: str,
-    file: UploadFile = File(..., description="Markdown file to upload"),
-    chunk_strategy: ChunkStrategyEnum = Form(
-        default=ChunkStrategyEnum.RECURSIVE,
-        description="Chunking strategy to use"
-    ),
-):
-    """
-    Upload a single markdown file (Swagger-friendly)
-    """
-    # Validate space exists
-    if not space_service.space_exists(space_uuid):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Space not found: {space_uuid}"
-        )
-    
-    # Validate file extension
-    allowed_extensions = {".md", ".markdown", ".txt"}
-    file_ext = "." + file.filename.split(".")[-1].lower() if "." in file.filename else ""
-    if file_ext not in allowed_extensions:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid file type: {file.filename}. Allowed: {', '.join(allowed_extensions)}"
-        )
-    
-    # Read content
-    try:
-        content = await file.read()
-        content_str = content.decode("utf-8")
-    except UnicodeDecodeError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Could not read file: {file.filename}. Ensure it's UTF-8 encoded."
-        )
-    
-    # Convert strategy
-    strategy = ChunkStrategy(chunk_strategy.value)
-    
-    # Upload
-    result = artifact_service.upload_multiple(
-        space_uuid=space_uuid,
-        files=[{"file_name": file.filename, "content": content_str}],
-        chunk_strategy=strategy,
-    )
-    
-    return result
-
-
-# ==================== MULTI-FILE UPLOAD ====================
+# ==================== UPLOAD ====================
 
 @router.post(
     "",
@@ -190,30 +132,27 @@ def list_artifacts(space_uuid: str):
     return ArtifactListResponse(artifacts=artifacts, total=len(artifacts))
 
 
+# ==================== DOWNLOAD ====================
+
 @router.get(
-    "/{artifact_id}",
-    response_model=ArtifactResponse,
-    summary="Get artifact details",
-    description="Get detailed information about a specific artifact"
+    "/{artifact_id}/download",
+    summary="Download artifact",
+    description="Download the reconstructed content of an artifact as a file"
 )
-def get_artifact(space_uuid: str, artifact_id: str):
-    """Get a specific artifact by ID"""
-    # Validate space exists
+def download_artifact(space_uuid: str, artifact_id: str):
+    """Download artifact content reconstructed from chunks"""
     if not space_service.space_exists(space_uuid):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Space not found: {space_uuid}"
-        )
-    
-    artifact = artifact_service.get_artifact(space_uuid, artifact_id)
-    
-    if not artifact:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Artifact not found: {artifact_id}"
-        )
-    
-    return artifact
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Space not found: {space_uuid}")
+
+    data = artifact_service.get_artifact_content(space_uuid, artifact_id)
+    if not data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Artifact not found: {artifact_id}")
+
+    return Response(
+        content=data["content"],
+        media_type="text/markdown",
+        headers={"Content-Disposition": f'attachment; filename="{data["file_name"]}"'}
+    )
 
 
 # ==================== DELETE ====================

@@ -1,6 +1,11 @@
 """
-Retrieval Schemas
-Pydantic models for retrieval operations
+Retrieval Datamodels
+Pydantic models for the retrieval step of the RAG pipeline.
+
+Three search modes are supported:
+  - VECTOR  — semantic similarity using the embedding vectors
+  - FTS     — keyword-based full-text search on the plain table
+  - HYBRID  — combination of both (recommended default)
 """
 
 from pydantic import BaseModel, Field

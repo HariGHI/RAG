@@ -1,8 +1,7 @@
-from .router import router
-from .service import artifact_service
-from .schemas import (
+from .artifacts_router import router
+from .artifacts_service import artifact_service
+from .artifacts_datamodel import (
     ChunkStrategyEnum,
-    ArtifactResponse,
     ArtifactListResponse,
     ArtifactDeleteResponse,
     UploadResponse,
@@ -12,7 +11,6 @@ __all__ = [
     "router",
     "artifact_service",
     "ChunkStrategyEnum",
-    "ArtifactResponse",
     "ArtifactListResponse",
     "ArtifactDeleteResponse",
     "UploadResponse",

@@ -1,12 +1,16 @@
 """
-Generation Schemas
-Pydantic models for LLM generation
+Generation Datamodels
+Pydantic models for the generation step of the RAG pipeline.
+
+Generation is the final stage — it takes the augmented prompt built by
+the augmentation service and calls the local Ollama LLM to produce an
+answer or summary grounded in the retrieved document context.
 """
 
 from pydantic import BaseModel, Field
 from typing import Optional, List
 
-from app.retrieval.schemas import RetrievalMode
+from app.retrieval.retrieval_datamodel import RetrievalMode
 
 
 # ==================== REQUEST SCHEMAS ====================
@@ -58,25 +62,11 @@ class SummarizeRequest(BaseModel):
     )
 
 
-class CompareRequest(BaseModel):
-    """Request body for comparing documents"""
-    artifact_ids: List[str] = Field(
-        ...,
-        min_length=2,
-        max_length=5,
-        description="Artifact IDs to compare (2-5)"
-    )
-    focus: Optional[str] = Field(
-        default=None,
-        description="Specific aspect to focus comparison on"
-    )
-
-
 # ==================== RESPONSE SCHEMAS ====================
 
 class SourceInfo(BaseModel):
-    """Info about a source chunk used in generation"""
-    chunk_id: str
+    """Info about a source artifact used in generation"""
+    artifact_id: str
     file_name: str
     preview: str = Field(..., description="First 100 chars")
 
@@ -97,10 +87,3 @@ class SummarizeResponse(BaseModel):
     model: str
 
 
-class CompareResponse(BaseModel):
-    """Response from comparison"""
-    comparison: str
-    artifacts_compared: List[str]
-    similarities: List[str]
-    differences: List[str]
-    model: str

@@ -1,6 +1,6 @@
-from .router import router
-from .service import retrieval_service
-from .schemas import (
+from .retrieval_router import router
+from .retrieval_service import retrieval_service
+from .retrieval_datamodel import (
     RetrievalMode,
     RetrievalRequest,
     RetrievalResponse,

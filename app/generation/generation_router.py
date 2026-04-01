@@ -5,18 +5,16 @@ API endpoints for LLM generation
 
 from fastapi import APIRouter, HTTPException, status
 
-from app.spaces.service import space_service
+from app.spaces.spaces_service import space_service
 
-from .schemas import (
+from .generation_datamodel import (
     GenerateRequest,
     GenerateResponse,
     SummarizeRequest,
     SummarizeResponse,
-    CompareRequest,
-    CompareResponse,
     SourceInfo,
 )
-from .service import generation_service
+from .generation_service import generation_service
 
 
 router = APIRouter(prefix="/spaces/{space_uuid}/generate", tags=["Generation"])
@@ -129,51 +127,3 @@ def summarize(space_uuid: str, body: SummarizeRequest = SummarizeRequest()):
             detail=f"Summarization failed: {str(e)}"
         )
 
-
-# ==================== COMPARISON ====================
-
-@router.post(
-    "/compare",
-    response_model=CompareResponse,
-    summary="Compare documents",
-    description="Compare multiple documents to find similarities and differences"
-)
-def compare(space_uuid: str, body: CompareRequest):
-    """
-    Compare multiple documents
-    
-    Identifies:
-    - Overall comparison
-    - Similarities between documents
-    - Differences between documents
-    
-    Optionally focus on a specific aspect
-    """
-    # Validate space exists
-    if not space_service.space_exists(space_uuid):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Space not found: {space_uuid}"
-        )
-    
-    # Check Ollama
-    if not generation_service.check_ollama():
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Ollama is not running. Please start it with 'ollama serve'"
-        )
-    
-    try:
-        result = generation_service.compare(
-            space_uuid=space_uuid,
-            artifact_ids=body.artifact_ids,
-            focus=body.focus
-        )
-        
-        return CompareResponse(**result)
-    
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Comparison failed: {str(e)}"
-        )

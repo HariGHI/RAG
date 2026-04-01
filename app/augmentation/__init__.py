@@ -1,2 +1,2 @@
-from .service import augmentation_service
-from .router import router
+from .augmentation_service import augmentation_service
+from .augmentation_router import router

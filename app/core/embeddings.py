@@ -3,7 +3,7 @@ Embeddings Module
 Wrapper for Sentence Transformers to generate text embeddings
 """
 
-from typing import List, Union
+from typing import List
 from sentence_transformers import SentenceTransformer
 
 from .config import settings

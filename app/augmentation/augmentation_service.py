@@ -7,8 +7,8 @@ Bridges retrieval and generation:
 
 from typing import List, Dict, Optional
 
-from app.retrieval.service import retrieval_service
-from app.retrieval.schemas import RetrievalMode
+from app.retrieval.retrieval_service import retrieval_service
+from app.retrieval.retrieval_datamodel import RetrievalMode
 from app.core.logger import log_step
 
 

@@ -16,14 +16,14 @@ from app.core.config import settings
 from app.core.logger import log_step, log_success, log_warning
 
 # ── RAG pipeline modules ──────────────────────────────────────────────────────
-from app.retrieval.router import router as retrieval_router
-from app.augmentation.router import router as augmentation_router
-from app.generation.router import router as generation_router
+from app.retrieval.retrieval_router import router as retrieval_router
+from app.augmentation.augmentation_router import router as augmentation_router
+from app.generation.generation_router import router as generation_router
 
 # ── Supporting modules ────────────────────────────────────────────────────────
-from app.spaces.router import router as spaces_router
-from app.artifacts.router import router as artifacts_router
-from app.vectors.router import router as vectors_router
+from app.spaces.spaces_router import router as spaces_router
+from app.artifacts.artifacts_router import router as artifacts_router
+from app.vectors.vectors_router import router as vectors_router
 
 
 # ==================== LIFESPAN ====================

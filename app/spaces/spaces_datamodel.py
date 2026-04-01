@@ -1,6 +1,11 @@
 """
-Spaces Schemas
-Pydantic models for request/response validation
+Spaces Datamodels
+Pydantic models for Space request/response validation.
+
+A "space" is an isolated workspace. Each space has its own:
+- plain LanceDB table (chunks + FTS index)
+- vector store (embeddings)
+- metadata entry (name, description, artifact list)
 """
 
 from pydantic import BaseModel, Field

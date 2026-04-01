@@ -1,6 +1,16 @@
 """
 Retrieval Service
-Business logic for vector and hybrid search
+Business logic for the retrieval step of the RAG pipeline.
+
+This is the first active stage of RAG — given a user query it finds the
+most relevant chunks stored in the space. Three modes are available:
+
+  VECTOR  — embed the query and run ANN (approximate nearest-neighbour)
+            search against the LanceDB vector store.
+  FTS     — run a BM25 full-text search against the plain table.
+  HYBRID  — run both and let LanceDB merge the ranked lists (recommended).
+
+Results are normalised to a common score field and returned in rank order.
 """
 
 from typing import List, Optional, Dict
@@ -9,7 +19,7 @@ from app.core.database import plain_table_manager, vector_store_manager
 from app.core.embeddings import embedding_model
 from app.core.logger import log_search, log_step
 
-from .schemas import RetrievalMode
+from .retrieval_datamodel import RetrievalMode
 
 
 class RetrievalService:
@@ -178,9 +188,12 @@ class RetrievalService:
         limit: int = 5
     ) -> str:
         """
-        Get retrieved chunks as formatted context string
-        
-        Useful for augmentation step
+        Convenience method used by the augmentation service.
+
+        Retrieves relevant chunks and formats them as a single string
+        where each chunk is prefixed with its source file name and
+        separated by a horizontal rule. Returns an empty string when
+        no results are found.
         """
         results = self.retrieve(space_uuid, query, mode, limit)
         
