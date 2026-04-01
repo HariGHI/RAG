@@ -62,6 +62,35 @@ class Section:
 
 # ==================== MARKDOWN CLEANING ====================
 
+def clean_markdown_text(text: str) -> str:
+    """
+    Strip markdown syntax from text, leaving plain readable content.
+    Preserves the words/sentences; removes decorators.
+    """
+    # Remove horizontal rules
+    text = re.sub(r"^[-*_]{3,}\s*$", "", text, flags=re.MULTILINE)
+    # Remove heading markers (in case any remain in content)
+    text = re.sub(r"^#{1,6}\s+", "", text, flags=re.MULTILINE)
+    # Remove images (keep alt text)
+    text = re.sub(r"!\[([^\]]*)\]\([^\)]*\)", r"\1", text)
+    # Remove links (keep label text)
+    text = re.sub(r"\[([^\]]+)\]\([^\)]*\)", r"\1", text)
+    # Remove inline code backticks
+    text = re.sub(r"`+([^`]*)`+", r"\1", text)
+    # Remove bold/italic markers (**text**, *text*, __text__, _text_)
+    text = re.sub(r"\*{1,3}([^*]+)\*{1,3}", r"\1", text)
+    text = re.sub(r"_{1,3}([^_]+)_{1,3}", r"\1", text)
+    # Remove blockquote markers
+    text = re.sub(r"^>\s*", "", text, flags=re.MULTILINE)
+    # Remove unordered list markers
+    text = re.sub(r"^[\-\*\+]\s+", "", text, flags=re.MULTILINE)
+    # Remove ordered list markers
+    text = re.sub(r"^\d+\.\s+", "", text, flags=re.MULTILINE)
+    # Collapse multiple blank lines
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
+
+
 def strip_frontmatter(text: str) -> str:
     """Remove YAML/TOML frontmatter (--- ... --- or +++ ... +++) from the top."""
     for fence in ("---", "+++"):
@@ -287,13 +316,9 @@ class MarkdownChunker:
         overlap: int,
         start_index: int,
     ) -> List[Chunk]:
-        if section.title:
-            prefix = "#" * section.level + " " + section.title
-            full_text = f"{prefix}\n\n{section.content}"
-        else:
-            full_text = section.content
-
-        full_text = full_text.strip()
+        # Title and parent_title are stored as dedicated fields — no need to
+        # embed markdown headers into the chunk text itself.
+        full_text = clean_markdown_text(section.content)
         if not full_text:
             return []
 
@@ -308,17 +333,12 @@ class MarkdownChunker:
                 metadata={"strategy": "semantic", "complete": True},
             )]
 
-        # Too large — split content, keep title on first sub-chunk
-        parts = self._split_with_overlap(section.content, chunk_size, overlap)
+        # Too large — split content
+        parts = self._split_with_overlap(full_text, chunk_size, overlap)
         result: List[Chunk] = []
 
         for i, part in enumerate(parts):
-            if i == 0 and section.title:
-                prefix = "#" * section.level + " " + section.title
-                chunk_text = f"{prefix}\n\n{part}".strip()
-            else:
-                chunk_text = part.strip()
-
+            chunk_text = part.strip()
             if chunk_text:
                 result.append(Chunk(
                     text=chunk_text,
@@ -350,11 +370,7 @@ class MarkdownChunker:
         for i, section in enumerate(sections):
             if section.level > max_header_level:
                 continue
-            if section.title:
-                prefix = "#" * section.level + " " + section.title
-                content = f"{prefix}\n\n{section.content}".strip()
-            else:
-                content = section.content.strip()
+            content = clean_markdown_text(section.content)
 
             if content:
                 chunks.append(Chunk(
@@ -377,7 +393,7 @@ class MarkdownChunker:
 
         for section in sections:
             for para in re.split(r"\n\s*\n", section.content):
-                para = para.strip()
+                para = clean_markdown_text(para)
                 if para:
                     chunks.append(Chunk(
                         text=para,
