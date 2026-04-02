@@ -3,8 +3,12 @@ RAG Summarizer API
 Minimal orchestrator — mounts the three RAG module routers plus support routers.
 """
 
-from contextlib import asynccontextmanager
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from contextlib import asynccontextmanager
 
 import ollama
 from fastapi import FastAPI
