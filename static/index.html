@@ -993,45 +993,59 @@ async function uploadFiles() {
 
   const btn = document.getElementById('uploadBtn');
   btn.disabled = true;
-  btn.innerHTML = '<span class="spin"></span> Processing…';
 
-  const formData = new FormData();
-  pendingFiles.forEach(f => formData.append('files', f));
-  formData.append('chunk_strategy', document.getElementById('chunkStrategy').value);
+  const strategy = document.getElementById('chunkStrategy').value;
+  const results = [];
+  let totalChunks = 0;
 
-  try {
-    const r = await fetch(`${API}/spaces/${activeSpace.uuid}/artifacts`, { method: 'POST', body: formData });
-    const d = await r.json();
-    if (!r.ok) throw new Error(d.detail || 'Upload failed');
+  for (let i = 0; i < pendingFiles.length; i++) {
+    const f = pendingFiles[i];
+    btn.innerHTML = `<span class="spin"></span> Uploading ${i + 1}/${pendingFiles.length}…`;
 
-    // Show result cards
-    document.getElementById('uploadResults').innerHTML =
-      (d.artifacts || []).map(a => `
-        <div class="result-card">
-          <div class="rc-title">&#10003; ${esc(a.file_name)}</div>
-          <div class="rc-detail">${a.chunk_count} chunks &nbsp;·&nbsp; artifact <code style="font-size:.8em;opacity:.7">${a.artifact_id.slice(0, 8)}…</code></div>
-        </div>`).join('');
+    const formData = new FormData();
+    formData.append('file', f);
+    formData.append('chunk_strategy', strategy);
 
-    // Mark step 1 done
-    document.getElementById('step1Num').className = 'step-num done';
-    document.getElementById('step1Num').textContent = '✓';
+    try {
+      const r = await fetch(`${API}/spaces/${activeSpace.uuid}/artifacts`, { method: 'POST', body: formData });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.detail || `Upload failed: ${f.name}`);
+      results.push(d);
+      totalChunks += d.chunk_count || 0;
+    } catch (e) {
+      toast(e.message, 'error');
+    }
+  }
 
-    // Show "Vectorize Now" banner
-    document.getElementById('postUploadBanner').classList.remove('hidden');
-
-    pendingFiles = [];
-    renderFileQueue();
-    document.getElementById('fileInput').value = '';
-    toast(`Uploaded ${d.artifacts?.length || 0} file(s) — ${d.total_chunks} chunks`, 'success');
-
-    // Refresh vectorize stats
-    await refreshVectStats();
-  } catch (e) {
-    toast(e.message, 'error');
-  } finally {
+  if (!results.length) {
     btn.disabled = false;
     btn.innerHTML = '&#8679; Upload &amp; Chunk';
+    return;
   }
+
+  // Show result cards
+  document.getElementById('uploadResults').innerHTML = results.map(a => `
+    <div class="result-card">
+      <div class="rc-title">&#10003; ${esc(a.file_name)}</div>
+      <div class="rc-detail">${a.chunk_count} chunks &nbsp;·&nbsp; artifact <code style="font-size:.8em;opacity:.7">${a.artifact_id.slice(0, 8)}…</code></div>
+    </div>`).join('');
+
+  // Mark step 1 done
+  document.getElementById('step1Num').className = 'step-num done';
+  document.getElementById('step1Num').textContent = '✓';
+
+  // Show "Vectorize Now" banner
+  document.getElementById('postUploadBanner').classList.remove('hidden');
+
+  pendingFiles = [];
+  renderFileQueue();
+  document.getElementById('fileInput').value = '';
+  toast(`Uploaded ${results.length} file(s) — ${totalChunks} chunks`, 'success');
+
+  await refreshVectStats();
+
+  btn.disabled = false;
+  btn.innerHTML = '&#8679; Upload &amp; Chunk';
 }
 
 /* ── Vectorize ───────────────────────────────────────── */

@@ -3,7 +3,7 @@ Artifacts Router
 API endpoints for uploading and managing artifacts (markdown files)
 """
 
-from typing import List, Optional
+from typing import Annotated, Optional
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, status
 from fastapi.responses import Response
 
@@ -15,7 +15,6 @@ from .artifacts_datamodel import (
     ArtifactResponse,
     ArtifactListResponse,
     ArtifactDeleteResponse,
-    UploadResponse,
 )
 from .artifacts_service import artifact_service
 
@@ -27,87 +26,62 @@ router = APIRouter(prefix="/spaces/{space_uuid}/artifacts", tags=["Artifacts"])
 
 @router.post(
     "",
-    response_model=UploadResponse,
+    response_model=ArtifactResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Upload markdown file(s)",
-    description="Upload one or more markdown files to a space. Files are automatically chunked and stored."
+    summary="Upload a markdown file",
+    description="Upload a single markdown file to a space. It is automatically chunked and stored."
 )
-async def upload_artifacts(
+async def upload_artifact(
     space_uuid: str,
-    files: List[UploadFile] = File(..., description="Markdown files to upload"),
-    chunk_strategy: ChunkStrategyEnum = Form(
-        default=ChunkStrategyEnum.RECURSIVE,
-        description="Chunking strategy to use"
-    ),
-    chunk_size: Optional[int] = Form(
-        default=None,
-        ge=100,
-        le=5000,
-        description="Custom chunk size (optional)"
-    ),
-    chunk_overlap: Optional[int] = Form(
-        default=None,
-        ge=0,
-        le=500,
-        description="Custom chunk overlap (optional)"
-    ),
+    file: Annotated[UploadFile, File(description="Markdown file to upload (.md, .markdown, .txt)")],
+    chunk_strategy: Annotated[ChunkStrategyEnum, Form(description="Chunking strategy")] = ChunkStrategyEnum.RECURSIVE,
+    chunk_size: Annotated[Optional[int], Form(ge=100, le=5000, description="Custom chunk size in characters (default: 500)")] = None,
+    chunk_overlap: Annotated[Optional[int], Form(ge=0, le=500, description="Custom chunk overlap in characters (default: 100)")] = None,
 ):
     """
-    Upload markdown files to a space
-    
-    - Files are read and parsed
-    - Content is split into chunks using selected strategy
-    - Chunks are stored in plain table with FTS index
-    
-    Supported files: .md, .markdown, .txt
+    Upload one markdown file to a space.
+
+    - File is read and decoded as UTF-8
+    - Content is split into chunks using the selected strategy
+    - Chunks are stored in the plain LanceDB table (FTS-indexed)
+
+    Supported: .md · .markdown · .txt
     """
-    # Validate space exists
     if not space_service.space_exists(space_uuid):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Space not found: {space_uuid}"
         )
-    
-    # Validate files
+
+    # Validate extension
     allowed_extensions = {".md", ".markdown", ".txt"}
-    file_data_list = []
-    
-    for file in files:
-        # Check extension
-        file_ext = "." + file.filename.split(".")[-1].lower() if "." in file.filename else ""
-        if file_ext not in allowed_extensions:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid file type: {file.filename}. Allowed: {', '.join(allowed_extensions)}"
-            )
-        
-        # Read content
-        try:
-            content = await file.read()
-            content_str = content.decode("utf-8")
-        except UnicodeDecodeError:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Could not read file: {file.filename}. Ensure it's UTF-8 encoded."
-            )
-        
-        file_data_list.append({
-            "file_name": file.filename,
-            "content": content_str,
-        })
-    
-    # Convert strategy enum to ChunkStrategy
+    file_ext = "." + file.filename.split(".")[-1].lower() if "." in file.filename else ""
+    if file_ext not in allowed_extensions:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid file type: {file.filename}. Allowed: {', '.join(allowed_extensions)}"
+        )
+
+    # Read content
+    try:
+        content_str = (await file.read()).decode("utf-8")
+    except UnicodeDecodeError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Could not read file: {file.filename}. Ensure it is UTF-8 encoded."
+        )
+
     strategy = ChunkStrategy(chunk_strategy.value)
-    
-    # Upload and process files
-    result = artifact_service.upload_multiple(
+
+    result = artifact_service.upload_artifact(
         space_uuid=space_uuid,
-        files=file_data_list,
+        file_name=file.filename,
+        content=content_str,
         chunk_strategy=strategy,
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
     )
-    
+
     return result
 
 
@@ -120,14 +94,13 @@ async def upload_artifacts(
     description="List all artifacts in a space"
 )
 def list_artifacts(space_uuid: str):
-    """List all artifacts in a space"""
-    # Validate space exists
+    """List all artifacts uploaded to a space."""
     if not space_service.space_exists(space_uuid):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Space not found: {space_uuid}"
         )
-    
+
     artifacts = artifact_service.list_artifacts(space_uuid)
     return ArtifactListResponse(artifacts=artifacts, total=len(artifacts))
 
@@ -140,7 +113,12 @@ def list_artifacts(space_uuid: str):
     description="Download the reconstructed content of an artifact as a file"
 )
 def download_artifact(space_uuid: str, artifact_id: str):
-    """Download artifact content reconstructed from chunks"""
+    """
+    Reconstruct and download an artifact from its stored chunks.
+
+    Since raw files are not stored on disk (only chunks in LanceDB),
+    the content is rebuilt by joining all chunks for the artifact.
+    """
     if not space_service.space_exists(space_uuid):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Space not found: {space_uuid}")
 
@@ -161,27 +139,24 @@ def download_artifact(space_uuid: str, artifact_id: str):
     "/{artifact_id}",
     response_model=ArtifactDeleteResponse,
     summary="Delete an artifact",
-    description="Delete an artifact and all its chunks/embeddings"
+    description="Delete an artifact and all its chunks and embeddings"
 )
 def delete_artifact(space_uuid: str, artifact_id: str):
     """
-    Delete an artifact and all associated data
-    
-    ⚠️ This action is irreversible!
+    Delete an artifact and all associated data (chunks + vectors).
+
+    This action is irreversible.
     """
-    # Validate space exists
     if not space_service.space_exists(space_uuid):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Space not found: {space_uuid}"
         )
-    
-    # Validate artifact exists
+
     if not artifact_service.artifact_exists(space_uuid, artifact_id):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Artifact not found: {artifact_id}"
         )
-    
-    result = artifact_service.delete_artifact(space_uuid, artifact_id)
-    return result
+
+    return artifact_service.delete_artifact(space_uuid, artifact_id)
