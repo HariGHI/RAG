@@ -11,3 +11,5 @@ fs/
 .venv/
 venv/
 env/
+
+.vscode
