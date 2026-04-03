@@ -71,7 +71,7 @@ chmod +x setup.sh
 
 **Windows:**
 ```bat
-setup.bat
+./setup.bat
 ```
 
 > **Windows note:** Ollama must be installed manually before running the script — download from [ollama.com/download](https://ollama.com/download).
