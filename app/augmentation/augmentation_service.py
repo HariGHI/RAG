@@ -13,10 +13,14 @@ from app.core.logger import log_step
 
 
 DEFAULT_SYSTEM_PROMPT = (
-    "You are a helpful assistant that answers questions based on the provided context. "
-    "Always ground your answers in the context. "
-    "If the context does not contain enough information, say so clearly. "
-    "Be concise and accurate."
+    "You are a helpful assistant. "
+    "When the user sends a greeting, casual message, or anything unrelated to documents "
+    "(e.g. 'hello', 'hi', 'how are you', 'thanks'), respond naturally and conversationally — "
+    "do NOT reference the context in these cases. "
+    "When the user asks a question that can be answered from the provided context, "
+    "ground your answer in that context and be concise and accurate. "
+    "If the question is document-related but the context does not contain enough information, "
+    "say so clearly rather than guessing."
 )
 
 

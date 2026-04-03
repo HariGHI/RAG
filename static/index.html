@@ -8,597 +8,802 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:       #f0f6ff;
-      --surface:  #ffffff;
-      --surface2: #eaf2ff;
-      --surface3: #dbeafe;
-      --border:   #bfdbfe;
-      --accent:   #2563eb;
-      --accent2:  #38bdf8;
-      --success:  #059669;
-      --danger:   #dc2626;
-      --warning:  #d97706;
-      --text:     #0f172a;
-      --muted:    #64748b;
-      --radius:   12px;
-      --shadow:   0 4px 24px rgba(37,99,235,.12);
+      --primary:       #4F46E5;
+      --primary-dark:  #3730A3;
+      --primary-light: #EEF2FF;
+      --cyan:          #06B6D4;
+      --success:       #059669;
+      --danger:        #DC2626;
+      --warning:       #D97706;
+      --bg:            #F8FAFC;
+      --surface:       #FFFFFF;
+      --surface2:      #F1F5F9;
+      --border:        #E2E8F0;
+      --border2:       #CBD5E1;
+      --text:          #0F172A;
+      --text2:         #1E293B;
+      --muted:         #64748B;
+      --muted2:        #94A3B8;
+      --radius:        10px;
+      --radius-lg:     14px;
+      --shadow-sm:     0 1px 3px rgba(0,0,0,.06);
+      --shadow:        0 4px 16px rgba(0,0,0,.08);
+      --shadow-lg:     0 8px 32px rgba(0,0,0,.12);
+      --sidebar-w:     310px;
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; font-size: 14px; line-height: 1.5;
     }
 
-    /* ── Views ───────────────────────────────────────────── */
-    .view { display: none; min-height: 100vh; flex-direction: column; }
-    .view.active { display: flex; }
-
-    /* ── Top Bar ─────────────────────────────────────────── */
+    /* ══════════════════════════════════
+       TOPBAR
+    ══════════════════════════════════ */
     .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 28px;
-      height: 56px;
-      background: var(--surface);
+      display: flex; align-items: center;
+      height: 52px; background: var(--surface);
       border-bottom: 1px solid var(--border);
-      box-shadow: 0 1px 4px rgba(37,99,235,.06);
-      flex-shrink: 0;
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      flex-shrink: 0; position: sticky; top: 0; z-index: 100;
+      padding: 0 20px;
     }
-    .topbar-left { display: flex; align-items: center; gap: 12px; }
-    .topbar-logo {
-      display: flex; align-items: center; gap: 10px;
-      font-weight: 700; font-size: 1.05rem; letter-spacing: -.3px;
-      text-decoration: none; color: var(--text);
-      cursor: pointer;
+    .brand {
+      display: flex; align-items: center; gap: 8px;
+      font-weight: 700; font-size: 15px; color: var(--text);
+      cursor: pointer; padding-right: 20px; user-select: none;
+      border-right: 1px solid var(--border); margin-right: 2px;
+      white-space: nowrap; flex-shrink: 0;
     }
-    .topbar-logo .dot {
-      width: 10px; height: 10px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
+    .brand-icon {
+      width: 28px; height: 28px; border-radius: 7px;
+      background: linear-gradient(135deg, var(--primary), var(--cyan));
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 13px; font-weight: 800; flex-shrink: 0;
     }
-    .breadcrumb {
-      display: flex; align-items: center; gap: 6px;
-      font-size: .85rem; color: var(--muted);
+    .nav-tabs { display: flex; align-items: center; gap: 2px; flex: 1; padding: 0 6px; }
+    .nav-tab {
+      padding: 6px 16px; border-radius: 7px; font-size: 13.5px;
+      font-weight: 500; cursor: pointer; color: var(--muted);
+      transition: color .15s, background .15s; user-select: none;
+      border: none; background: none;
     }
-    .breadcrumb .crumb-sep { opacity: .4; }
-    .breadcrumb .crumb-active { color: var(--text); font-weight: 500; }
+    .nav-tab.active { color: var(--primary); background: var(--primary-light); }
+    .nav-tab:hover:not(.active) { color: var(--text); background: var(--surface2); }
 
-    .health-badge {
+    .topbar-right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+    .health-pill {
       display: flex; align-items: center; gap: 6px;
-      font-size: .8rem; color: var(--muted);
-      padding: 4px 12px; background: var(--surface2);
-      border-radius: 20px; border: 1px solid var(--border);
+      padding: 4px 11px; border-radius: 20px;
+      background: var(--surface2); border: 1px solid var(--border);
+      font-size: 12px; color: var(--muted); white-space: nowrap; flex-shrink: 0;
     }
-    .health-badge .indicator { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
-    .health-badge.ok   .indicator { background: var(--success); }
-    .health-badge.warn .indicator { background: var(--warning); }
+    .health-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted2); flex-shrink: 0; }
+    .health-pill.ok   .health-dot { background: var(--success); }
+    .health-pill.warn .health-dot { background: var(--warning); }
 
-    .back-btn {
-      display: flex; align-items: center; gap: 6px;
-      background: #fff; border: 1px solid var(--border);
-      color: var(--muted); cursor: pointer; border-radius: 8px;
-      padding: 6px 12px; font-size: .83rem; transition: color .15s, border-color .15s, background .15s;
-    }
-    .back-btn:hover { color: var(--accent); border-color: var(--accent); background: rgba(37,99,235,.04); }
+    /* ══════════════════════════════════
+       PAGE LAYOUT
+    ══════════════════════════════════ */
+    .page { display: none; flex: 1; flex-direction: column; min-height: calc(100vh - 52px); }
+    .page.active { display: flex; }
 
-    /* ── Buttons ─────────────────────────────────────────── */
+    /* ══════════════════════════════════
+       BUTTONS
+    ══════════════════════════════════ */
     .btn {
-      background: var(--accent); color: #fff; border: none;
-      padding: 10px 22px; border-radius: 9px;
-      font-size: .9rem; font-weight: 500; cursor: pointer;
-      display: inline-flex; align-items: center; gap: 8px;
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 8px 18px; border-radius: 8px; border: none;
+      background: var(--primary); color: #fff;
+      font-size: 13.5px; font-weight: 500; cursor: pointer;
       transition: opacity .15s, transform .1s; white-space: nowrap;
     }
-    .btn:hover { opacity: .88; }
-    .btn:active { transform: scale(.98); }
+    .btn:hover   { opacity: .88; }
+    .btn:active  { transform: scale(.98); }
     .btn:disabled { opacity: .4; cursor: not-allowed; }
-    .btn.secondary { background: #fff; color: var(--text); border: 1px solid var(--border); }
-    .btn.secondary:hover { border-color: var(--accent); color: var(--accent); background: rgba(37,99,235,.04); }
-    .btn.success-btn { background: var(--success); color: #fff; font-weight: 600; }
-    .btn.danger-btn { background: var(--danger); }
-    .btn.large { padding: 13px 28px; font-size: 1rem; }
+    .btn.sm      { padding: 6px 12px; font-size: 12.5px; border-radius: 6px; }
+    .btn.success { background: var(--success); }
+    .btn.danger  { background: var(--danger); }
+    .btn.outline {
+      background: var(--surface); color: var(--text2);
+      border: 1px solid var(--border);
+    }
+    .btn.outline:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); opacity: 1; }
+    .btn.ghost {
+      background: transparent; color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .btn.ghost:hover { color: var(--text); background: var(--surface2); opacity: 1; }
 
-    /* ── Spinner ─────────────────────────────────────────── */
     .spin {
-      display: inline-block; width: 14px; height: 14px;
-      border: 2px solid rgba(255,255,255,.4); border-top-color: #fff;
+      display: inline-block; width: 12px; height: 12px;
+      border: 2px solid rgba(255,255,255,.35); border-top-color: #fff;
       border-radius: 50%; animation: spin .7s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ══════════════════════════════════════════════════════
-       HOME PAGE
-    ══════════════════════════════════════════════════════ */
-    .home-body {
-      flex: 1;
-      padding: 40px 28px 60px;
-      max-width: 1100px;
-      width: 100%;
-      margin: 0 auto;
+    /* ══════════════════════════════════
+       TAB 1: CHAT (DocsQA style)
+    ══════════════════════════════════ */
+    #page-chat {
+      flex-direction: row; overflow: hidden; height: calc(100vh - 52px);
     }
-    .home-hero {
-      margin-bottom: 36px;
-    }
-    .home-hero h1 {
-      font-size: 1.7rem; font-weight: 700; margin-bottom: 6px;
-    }
-    .home-hero p { color: var(--muted); font-size: .95rem; }
 
-    /* Spaces Grid */
+    /* Sidebar */
+    .chat-sidebar {
+      width: var(--sidebar-w); flex-shrink: 0;
+      border-right: 1px solid var(--border);
+      background: var(--surface);
+      overflow-y: auto; display: flex; flex-direction: column;
+    }
+    .sb-section {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sb-label {
+      font-size: 11px; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .06em;
+      margin-bottom: 7px; display: block;
+    }
+    .sb-select {
+      width: 100%; background: var(--surface2);
+      border: 1px solid var(--border); color: var(--text);
+      padding: 8px 30px 8px 10px; border-radius: 7px;
+      font-size: 13px; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 10px center;
+      transition: border-color .15s;
+    }
+    .sb-select:focus { outline: none; border-color: var(--primary); background-color: #fff; }
+    .sb-value {
+      font-size: 13.5px; font-weight: 500; color: var(--text);
+      padding: 7px 10px; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 7px;
+    }
+    .sb-code {
+      width: 100%; background: var(--surface2);
+      border: 1px solid var(--border); color: var(--muted);
+      padding: 10px; border-radius: 7px;
+      font-family: 'Menlo', 'Consolas', monospace;
+      font-size: 11.5px; resize: none; line-height: 1.7;
+      transition: border-color .15s;
+    }
+    .sb-code:focus { outline: none; border-color: var(--primary); color: var(--text); }
+
+    /* Chat right panel */
+    .chat-panel {
+      flex: 1; display: flex; flex-direction: column; overflow: hidden;
+    }
+
+    /* Query input bar at TOP (like DocsQA) */
+    .chat-query-bar {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      background: var(--surface); flex-shrink: 0;
+    }
+    .chat-query-inner {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 14px;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .chat-query-inner:focus-within {
+      border-color: var(--primary); background: #fff;
+      box-shadow: 0 0 0 3px rgba(79,70,229,.08);
+    }
+    #chatInput {
+      flex: 1; border: none; background: transparent; color: var(--text);
+      font-size: 14px; outline: none; font-family: inherit;
+    }
+    #chatInput::placeholder { color: var(--muted2); }
+    .send-btn {
+      background: var(--primary); border: none; color: #fff;
+      width: 34px; height: 34px; border-radius: 8px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0; transition: opacity .15s, transform .1s;
+    }
+    .send-btn:hover   { opacity: .88; }
+    .send-btn:active  { transform: scale(.94); }
+    .send-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+    /* Messages area */
+    .chat-messages {
+      flex: 1; overflow-y: auto;
+      padding: 28px 24px; display: flex; flex-direction: column; gap: 16px;
+    }
+
+    /* Welcome state */
+    .chat-welcome {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 20px;
+    }
+    .welcome-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .welcome-sub   { font-size: 13.5px; color: var(--muted); margin-bottom: 36px; line-height: 1.6; }
+    .welcome-how-label {
+      font-size: 14px; font-weight: 600; margin-bottom: 20px; color: var(--text2);
+    }
+    .how-works {
+      display: flex; align-items: center; gap: 0; margin: 0 auto;
+    }
+    .hw-step { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .hw-box {
+      width: 80px; height: 80px; border-radius: 18px;
+      background: var(--surface); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px; box-shadow: var(--shadow-sm);
+    }
+    .hw-label { font-size: 13px; font-weight: 600; color: var(--text2); }
+    .hw-arrow { font-size: 20px; color: var(--muted2); padding: 0 12px; margin-bottom: 30px; }
+
+    /* Messages */
+    .msg-row { display: flex; gap: 10px; align-items: flex-end; }
+    .msg-row.user { flex-direction: row-reverse; }
+    .msg-avatar {
+      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+    }
+    .msg-row.user .msg-avatar { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; }
+    .msg-row.ai  .msg-avatar  { background: var(--surface2); border: 1px solid var(--border); color: var(--primary); }
+    .msg-bubble {
+      max-width: 72%; padding: 11px 15px; border-radius: 14px;
+      font-size: 13.5px; line-height: 1.65; word-break: break-word;
+    }
+    .msg-row.user .msg-bubble {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff; border-bottom-right-radius: 3px;
+    }
+    .msg-row.ai .msg-bubble {
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); border-bottom-left-radius: 3px;
+      box-shadow: var(--shadow-sm);
+    }
+    .msg-sources { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.2); }
+    .msg-row.ai .msg-sources { border-top-color: var(--border); }
+    .src-label {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .05em; margin-bottom: 6px; color: rgba(255,255,255,.55);
+    }
+    .msg-row.ai .src-label { color: var(--muted); }
+    .src-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+    .src-chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11.5px; padding: 2px 9px; border-radius: 20px; cursor: pointer;
+      background: rgba(255,255,255,.18); color: rgba(255,255,255,.92);
+      border: 1px solid rgba(255,255,255,.2); transition: opacity .15s;
+    }
+    .msg-row.ai .src-chip {
+      background: var(--primary-light); border-color: rgba(79,70,229,.25); color: var(--primary);
+    }
+    .src-chip:hover { opacity: .72; }
+
+    /* Typing indicator */
+    .typing-dots { display: flex; gap: 4px; align-items: center; padding: 4px 0; }
+    .typing-dots span {
+      width: 5px; height: 5px; border-radius: 50%; background: var(--muted);
+      animation: bounce .9s infinite;
+    }
+    .typing-dots span:nth-child(2) { animation-delay: .15s; }
+    .typing-dots span:nth-child(3) { animation-delay: .3s; }
+    @keyframes bounce { 0%,80%,100% { transform: translateY(0); } 40% { transform: translateY(-6px); } }
+
+    /* ══════════════════════════════════
+       TAB 2: SPACES (Collections)
+    ══════════════════════════════════ */
+    #page-spaces {
+      padding: 36px 28px 64px;
+      overflow-y: auto;
+    }
+    .page-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 16px; margin-bottom: 28px;
+    }
+    .page-header-text h1 { font-size: 22px; font-weight: 700; }
+    .page-header-text p  { font-size: 13.5px; color: var(--muted); margin-top: 3px; }
+
     .spaces-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 18px;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 14px;
     }
-
-    /* Create card */
     .card-create {
-      border: 2px dashed var(--border);
-      border-radius: var(--radius);
-      background: transparent;
-      display: flex; flex-direction: column;
+      border: 1.5px dashed var(--border2); border-radius: var(--radius-lg);
+      background: transparent; display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      gap: 10px; padding: 36px 20px;
-      cursor: pointer; transition: border-color .2s, background .2s;
-      min-height: 180px;
-      color: var(--muted);
+      gap: 10px; padding: 32px 20px; min-height: 165px;
+      cursor: pointer; color: var(--muted);
+      transition: border-color .2s, background .2s, color .2s;
     }
-    .card-create:hover {
-      border-color: var(--accent);
-      background: rgba(37,99,235,.05);
-      color: var(--text);
-    }
-    .card-create .cc-icon {
-      width: 46px; height: 46px; border-radius: 12px;
+    .card-create:hover { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+    .cc-icon {
+      width: 44px; height: 44px; border-radius: 12px;
       background: var(--surface2); border: 1px solid var(--border);
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.5rem; transition: background .2s;
+      font-size: 22px; transition: background .2s, color .2s, border-color .2s;
     }
-    .card-create:hover .cc-icon { background: rgba(37,99,235,.12); }
-    .card-create span { font-size: .9rem; font-weight: 500; }
+    .card-create:hover .cc-icon { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .cc-label { font-size: 13.5px; font-weight: 500; }
 
-    /* Space card */
     .space-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 22px;
-      cursor: pointer;
-      transition: border-color .2s, box-shadow .2s, transform .15s;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 20px; cursor: pointer;
+      transition: box-shadow .2s, border-color .2s, transform .15s;
       display: flex; flex-direction: column; gap: 14px;
-      min-height: 180px;
-      position: relative;
-      overflow: hidden;
+      min-height: 165px; position: relative; overflow: hidden;
     }
-    .space-card::before {
-      content: '';
-      position: absolute; top: 0; left: 0; right: 0; height: 3px;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
+    .space-card::after {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--cyan));
       opacity: 0; transition: opacity .2s;
     }
-    .space-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(37,99,235,.15); }
-    .space-card:hover::before { opacity: 1; }
-
-    .sc-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
-    .sc-icon {
-      width: 44px; height: 44px; border-radius: 11px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
+    .space-card:hover {
+      border-color: var(--primary);
+      box-shadow: 0 6px 24px rgba(79,70,229,.12);
+      transform: translateY(-2px);
+    }
+    .space-card:hover::after { opacity: 1; }
+    .sc-top { display: flex; align-items: flex-start; justify-content: space-between; }
+    .sc-avatar {
+      width: 42px; height: 42px; border-radius: 11px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--primary), var(--cyan));
       display: flex; align-items: center; justify-content: center;
-      font-size: 1rem; font-weight: 700; color: #fff; flex-shrink: 0;
+      font-size: 17px; font-weight: 700; color: #fff;
     }
-    .sc-delete {
-      background: none; border: none; color: var(--muted);
-      cursor: pointer; font-size: 1rem; padding: 4px;
-      border-radius: 6px; transition: color .15s, background .15s;
-      opacity: 0;
+    .sc-del {
+      background: none; border: none; color: var(--muted2); cursor: pointer;
+      padding: 4px 6px; border-radius: 5px; font-size: 12px;
+      opacity: 0; transition: opacity .15s, color .15s;
     }
-    .space-card:hover .sc-delete { opacity: 1; }
-    .sc-delete:hover { color: var(--danger); background: rgba(220,38,38,.1); }
-
-    .sc-name { font-size: 1rem; font-weight: 600; line-height: 1.3; }
-
+    .space-card:hover .sc-del { opacity: 1; }
+    .sc-del:hover { color: var(--danger); }
+    .sc-name { font-size: 15px; font-weight: 600; }
+    .sc-desc { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
     .sc-footer { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
-    .sc-badges { display: flex; gap: 6px; flex-wrap: wrap; }
-    .badge {
-      display: inline-flex; align-items: center; gap: 4px;
-      font-size: .75rem; padding: 3px 8px; border-radius: 20px;
+    .sc-chips { display: flex; gap: 5px; flex-wrap: wrap; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 11.5px; padding: 2px 8px; border-radius: 20px;
       background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
     }
-    .badge.green { background: rgba(5,150,105,.1); border-color: rgba(5,150,105,.3); color: var(--success); }
-    .badge.purple { background: rgba(37,99,235,.1); border-color: rgba(37,99,235,.3); color: var(--accent); }
-
-    .sc-open {
-      font-size: .8rem; color: var(--accent); font-weight: 500;
-      display: flex; align-items: center; gap: 4px;
+    .chip.indigo { background: var(--primary-light); border-color: rgba(79,70,229,.25); color: var(--primary); }
+    .chip.green  { background: rgba(5,150,105,.07);  border-color: rgba(5,150,105,.25); color: var(--success); }
+    .sc-arrow {
+      font-size: 12.5px; color: var(--primary); font-weight: 500;
       opacity: 0; transition: opacity .15s;
     }
-    .space-card:hover .sc-open { opacity: 1; }
+    .space-card:hover .sc-arrow { opacity: 1; }
 
-    /* ── Create Modal ────────────────────────────────────── */
+    .empty-state {
+      grid-column: 1/-1; display: flex; flex-direction: column;
+      align-items: center; padding: 60px 20px; text-align: center; color: var(--muted);
+    }
+    .empty-state .es-icon { font-size: 40px; opacity: .2; margin-bottom: 12px; }
+
+    /* ══════════════════════════════════
+       TAB 3: DATA HUB (Upload)
+    ══════════════════════════════════ */
+    #page-hub {
+      padding: 36px 28px 64px; overflow-y: auto;
+      max-width: 860px; width: 100%; margin: 0 auto;
+    }
+
+    /* Space selector in hub */
+    .hub-space-bar {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 28px;
+      padding: 14px 18px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+    }
+    .hub-space-bar label { font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+    .hub-space-bar select {
+      flex: 1; background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); padding: 8px 30px 8px 10px; border-radius: 7px;
+      font-size: 13.5px; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 10px center;
+    }
+    .hub-space-bar select:focus { outline: none; border-color: var(--primary); }
+    .hub-no-space {
+      text-align: center; padding: 60px 20px; color: var(--muted);
+    }
+    .hub-no-space .ns-icon { font-size: 40px; opacity: .2; margin-bottom: 12px; }
+
+    /* Workflow card */
+    .wf-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); margin-bottom: 14px;
+      overflow: hidden; box-shadow: var(--shadow-sm);
+    }
+    .wf-header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 20px; border-bottom: 1px solid var(--border);
+    }
+    .step-badge {
+      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+      background: var(--surface2); border: 1.5px solid var(--border2); color: var(--muted);
+    }
+    .step-badge.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+    .step-badge.done   { background: rgba(5,150,105,.1);  border-color: rgba(5,150,105,.4); color: var(--success); }
+    .wf-header-text h3 { font-size: 14px; font-weight: 600; }
+    .wf-header-text p  { font-size: 12px; color: var(--muted); margin-top: 1px; }
+    .wf-body { padding: 20px; }
+
+    /* Drop zone */
+    .drop-zone {
+      border: 1.5px dashed var(--border2); border-radius: 10px;
+      padding: 30px 20px; text-align: center; cursor: pointer;
+      background: var(--surface2); margin-bottom: 14px;
+      transition: border-color .2s, background .2s;
+    }
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: var(--primary); background: var(--primary-light);
+    }
+    .drop-zone input { display: none; }
+    .dz-icon { font-size: 26px; margin-bottom: 8px; opacity: .4; }
+    .dz-text { font-size: 13.5px; color: var(--text); font-weight: 500; }
+    .dz-sub  { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    .file-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .file-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 13px; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 8px; font-size: 13px;
+    }
+    .file-icon { font-size: 14px; }
+    .file-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-size { color: var(--muted); font-size: 11.5px; }
+    .file-remove {
+      background: none; border: none; color: var(--muted2);
+      cursor: pointer; font-size: 12px; padding: 2px 5px; border-radius: 4px;
+    }
+    .file-remove:hover { color: var(--danger); }
+
+    .upload-row {
+      display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px;
+    }
+    .form-select {
+      flex: 1; min-width: 180px; background: var(--surface2);
+      border: 1px solid var(--border); color: var(--text);
+      padding: 9px 32px 9px 12px; border-radius: 8px; font-size: 13px;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center;
+    }
+    .form-select:focus { outline: none; border-color: var(--primary); background-color: #fff; }
+
+    .upload-result {
+      background: rgba(5,150,105,.04); border: 1px solid rgba(5,150,105,.18);
+      border-left: 3px solid var(--success); border-radius: 8px;
+      padding: 10px 14px; margin-bottom: 8px; font-size: 13px;
+    }
+    .ur-name   { font-weight: 600; margin-bottom: 2px; }
+    .ur-detail { color: var(--muted); font-size: 12px; }
+
+    .action-banner {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; background: rgba(5,150,105,.04);
+      border: 1px solid rgba(5,150,105,.18); border-radius: 10px;
+      padding: 14px 16px; margin-top: 14px;
+    }
+    .ab-text strong { display: block; font-size: 13.5px; font-weight: 600; margin-bottom: 2px; }
+    .ab-text span   { font-size: 12px; color: var(--muted); }
+
+    /* Stats */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px;
+    }
+    .stat-box {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 9px; padding: 14px; text-align: center;
+    }
+    .stat-val {
+      font-size: 26px; font-weight: 700;
+      background: linear-gradient(135deg, var(--primary), var(--cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-lbl { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+
+    .progress-track { background: var(--surface2); border-radius: 20px; height: 5px; overflow: hidden; margin-bottom: 5px; }
+    .progress-fill  { height: 100%; border-radius: 20px; background: linear-gradient(90deg, var(--primary), var(--cyan)); transition: width .5s ease; width: 0%; }
+    .progress-lbl   { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+    .vect-btns  { display: flex; gap: 8px; flex-wrap: wrap; }
+    .vect-status { margin-top: 10px; font-size: 12.5px; color: var(--muted); }
+
+    /* CTA */
+    .cta-card {
+      display: flex; align-items: center; gap: 20px;
+      background: linear-gradient(135deg, rgba(79,70,229,.05), rgba(6,182,212,.04));
+      border: 1px solid rgba(79,70,229,.15); border-radius: 12px; padding: 22px 24px;
+    }
+    .cta-icon { font-size: 36px; flex-shrink: 0; }
+    .cta-body { flex: 1; }
+    .cta-body h3 { font-size: 14.5px; font-weight: 600; margin-bottom: 4px; }
+    .cta-body p  { font-size: 13px; color: var(--muted); line-height: 1.55; }
+
+    /* ══════════════════════════════════
+       MODAL
+    ══════════════════════════════════ */
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(15,23,42,.4);
       display: flex; align-items: center; justify-content: center;
-      z-index: 200; backdrop-filter: blur(4px);
+      z-index: 300; backdrop-filter: blur(4px);
       opacity: 0; pointer-events: none; transition: opacity .2s;
     }
     .modal-overlay.show { opacity: 1; pointer-events: all; }
     .modal {
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 16px; padding: 28px; width: 100%; max-width: 420px;
-      box-shadow: var(--shadow);
-      transform: translateY(12px); transition: transform .2s;
+      border-radius: var(--radius-lg); padding: 24px 28px;
+      width: 100%; max-width: 400px; box-shadow: var(--shadow-lg);
+      transform: translateY(10px); transition: transform .2s;
     }
     .modal-overlay.show .modal { transform: translateY(0); }
-    .modal h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 18px; }
-    .modal label { display: block; font-size: .83rem; color: var(--muted); margin-bottom: 6px; }
-    .modal input {
-      width: 100%; background: #fff; border: 1px solid var(--border);
-      color: var(--text); padding: 11px 14px; border-radius: 9px;
-      font-size: .92rem; margin-bottom: 20px; transition: border-color .15s;
+    .modal-title  { font-size: 16px; font-weight: 700; margin-bottom: 20px; }
+    .form-group   { margin-bottom: 18px; }
+    .form-label   {
+      display: block; font-size: 11px; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px;
     }
-    .modal input:focus { outline: none; border-color: var(--accent); }
-    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+    .form-input {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); padding: 9px 12px; border-radius: 8px;
+      font-size: 14px; transition: border-color .15s, background .15s;
+    }
+    .form-input:focus { outline: none; border-color: var(--primary); background: #fff; }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
 
-    /* ══════════════════════════════════════════════════════
-       SPACE DETAIL PAGE
-    ══════════════════════════════════════════════════════ */
-    .space-body {
-      flex: 1; padding: 36px 28px 60px;
-      max-width: 860px; width: 100%; margin: 0 auto;
-    }
-
-    .space-page-header {
-      display: flex; align-items: center; gap: 16px; margin-bottom: 36px;
-    }
-    .space-page-icon {
-      width: 54px; height: 54px; border-radius: 14px; flex-shrink: 0;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.4rem; font-weight: 700; color: #fff;
-    }
-    .space-page-title h2 { font-size: 1.5rem; font-weight: 700; }
-    .space-page-title p { font-size: .85rem; color: var(--muted); margin-top: 3px; }
-
-    /* Section card */
-    .section-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius); margin-bottom: 20px; overflow: hidden;
-    }
-    .section-header {
-      display: flex; align-items: center; gap: 12px;
-      padding: 18px 22px; border-bottom: 1px solid var(--border);
-    }
-    .step-num {
-      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
-      background: var(--surface2); border: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: center;
-      font-size: .8rem; font-weight: 700; color: var(--muted);
-    }
-    .step-num.done {
-      background: rgba(5,150,105,.12); border-color: rgba(5,150,105,.4);
-      color: var(--success);
-    }
-    .step-num.active {
-      background: rgba(37,99,235,.12); border-color: rgba(37,99,235,.4);
-      color: var(--accent);
-    }
-    .section-header h3 { font-size: .97rem; font-weight: 600; }
-    .section-header p { font-size: .8rem; color: var(--muted); margin-top: 2px; }
-    .section-body { padding: 22px; }
-
-    /* Drop zone */
-    .drop-zone {
-      border: 2px dashed var(--border); border-radius: 10px;
-      padding: 36px 20px; text-align: center; cursor: pointer;
-      transition: border-color .2s, background .2s;
-      background: var(--surface2); margin-bottom: 14px;
-    }
-    .drop-zone:hover, .drop-zone.drag-over {
-      border-color: var(--accent); background: rgba(37,99,235,.04);
-    }
-    .drop-zone input { display: none; }
-    .drop-zone .dz-icon { font-size: 2rem; margin-bottom: 8px; opacity: .55; }
-    .drop-zone .dz-text { font-size: .9rem; color: var(--text); font-weight: 500; }
-    .drop-zone .dz-sub  { font-size: .78rem; color: var(--muted); margin-top: 4px; }
-
-    .file-queue { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-    .file-row {
-      display: flex; align-items: center; gap: 10px; padding: 10px 14px;
-      background: var(--surface2); border-radius: 8px; font-size: .85rem;
-      border: 1px solid var(--border);
-    }
-    .file-row .file-icon { font-size: 1rem; }
-    .file-row .file-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .file-row .file-size { color: var(--muted); font-size: .78rem; }
-    .file-row .file-remove { background: none; border: none; color: var(--muted); cursor: pointer; font-size: .9rem; }
-    .file-row .file-remove:hover { color: var(--danger); }
-
-    .upload-controls {
-      display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px;
-    }
-    .upload-controls select {
-      flex: 1; min-width: 200px; background: #fff; border: 1px solid var(--border);
-      color: var(--text); padding: 10px 12px; border-radius: 8px; font-size: .87rem;
-    }
-    .upload-controls select:focus { outline: none; border-color: var(--accent); }
-
-    /* Upload results */
-    .result-card {
-      background: var(--surface2); border-radius: 9px; padding: 12px 16px;
-      margin-bottom: 8px; border-left: 3px solid var(--success); font-size: .87rem;
-    }
-    .result-card .rc-title { font-weight: 600; margin-bottom: 3px; }
-    .result-card .rc-detail { color: var(--muted); font-size: .8rem; }
-
-    /* Post-upload action banner */
-    .action-banner {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 16px; background: rgba(5,150,105,.07);
-      border: 1px solid rgba(5,150,105,.25); border-radius: 10px;
-      padding: 14px 18px; margin-top: 16px;
-    }
-    .action-banner .ab-text { font-size: .9rem; }
-    .action-banner .ab-text strong { display: block; margin-bottom: 2px; }
-    .action-banner .ab-text span { font-size: .8rem; color: var(--muted); }
-
-    /* Stats */
-    .stats-row {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 18px;
-    }
-    .stat-box {
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 9px; padding: 16px; text-align: center;
-    }
-    .stat-num {
-      font-size: 1.8rem; font-weight: 700;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .stat-label { font-size: .75rem; color: var(--muted); margin-top: 3px; }
-
-    .progress-wrap { background: var(--surface2); border-radius: 20px; height: 6px; overflow: hidden; margin: 0 0 6px; }
-    .progress-bar  { height: 100%; border-radius: 20px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width .5s ease; width: 0%; }
-    .progress-label { font-size: .8rem; color: var(--muted); margin-bottom: 16px; }
-
-    .vect-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-
-    /* Chat CTA card */
-    .chat-cta-card {
-      display: flex; align-items: center; justify-content: space-between; gap: 20px;
-      background: linear-gradient(135deg, rgba(37,99,235,.07), rgba(56,189,248,.06));
-      border: 1px solid rgba(37,99,235,.2); border-radius: var(--radius);
-      padding: 24px 28px;
-    }
-    .chat-cta-card .cta-icon { font-size: 2.5rem; opacity: .8; }
-    .chat-cta-card .cta-text { flex: 1; }
-    .chat-cta-card .cta-text h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: 5px; }
-    .chat-cta-card .cta-text p { font-size: .85rem; color: var(--muted); line-height: 1.5; }
-
-    /* ══════════════════════════════════════════════════════
-       CHAT PAGE
-    ══════════════════════════════════════════════════════ */
-    #view-chat { overflow: hidden; height: 100vh; }
-    .chat-layout { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
-
-    .chat-options-bar {
-      display: flex; gap: 10px; align-items: center; padding: 10px 24px;
-      background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0;
-    }
-    .chat-options-bar label { font-size: .8rem; color: var(--muted); display: flex; align-items: center; gap: 5px; }
-    .chat-options-bar select {
-      background: #fff; border: 1px solid var(--border);
-      color: var(--text); padding: 4px 8px; border-radius: 6px; font-size: .8rem;
-    }
-    .chat-options-bar .spacer { flex: 1; }
-
-    .chat-messages {
-      flex: 1; overflow-y: auto; padding: 24px 28px;
-      display: flex; flex-direction: column; gap: 18px;
-    }
-    .chat-welcome {
-      display: flex; flex-direction: column; align-items: center;
-      justify-content: center; flex: 1; text-align: center;
-      color: var(--muted); gap: 10px; padding: 40px;
-    }
-    .chat-welcome .wl-icon { font-size: 3rem; opacity: .3; }
-    .chat-welcome h3 { font-size: 1.1rem; color: var(--text); font-weight: 600; }
-    .chat-welcome p { font-size: .88rem; max-width: 300px; line-height: 1.6; }
-
-    .msg-row { display: flex; gap: 10px; align-items: flex-end; }
-    .msg-row.user { flex-direction: row-reverse; }
-    .msg-avatar {
-      width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: .78rem; font-weight: 700;
-    }
-    .msg-row.user .msg-avatar { background: linear-gradient(135deg, var(--accent), #1d4ed8); color: #fff; }
-    .msg-row.ai .msg-avatar   { background: var(--surface3); color: var(--accent); border: 1px solid var(--border); }
-
-    .msg-bubble {
-      max-width: 70%; padding: 12px 16px; border-radius: 16px;
-      font-size: .9rem; line-height: 1.65; word-break: break-word;
-    }
-    .msg-row.user .msg-bubble {
-      background: linear-gradient(135deg, var(--accent), #1d4ed8);
-      color: #fff; border-bottom-right-radius: 4px;
-    }
-    .msg-row.ai .msg-bubble {
-      background: var(--surface2); border: 1px solid var(--border);
-      color: var(--text); border-bottom-left-radius: 4px;
-    }
-
-    .msg-sources {
-      margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);
-      display: flex; flex-direction: column; gap: 5px;
-    }
-    .msg-sources-label { font-size: .74rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
-    .source-chip {
-      display: inline-flex; align-items: center; gap: 5px;
-      font-size: .76rem; color: #0369a1;
-      background: rgba(56,189,248,.1); border: 1px solid rgba(56,189,248,.35);
-      border-radius: 20px; padding: 3px 8px;
-      cursor: pointer; transition: background .15s, border-color .15s;
-      text-decoration: none;
-    }
-    .source-chip:hover {
-      background: rgba(37,99,235,.12); border-color: var(--accent); color: var(--accent);
-    }
-
-    .typing-dots { display: flex; gap: 4px; align-items: center; padding: 4px 0; }
-    .typing-dots span {
-      width: 6px; height: 6px; border-radius: 50%; background: var(--muted);
-      animation: bounce .9s infinite;
-    }
-    .typing-dots span:nth-child(2) { animation-delay: .15s; }
-    .typing-dots span:nth-child(3) { animation-delay: .3s; }
-    @keyframes bounce { 0%,80%,100% { transform: translateY(0); } 40% { transform: translateY(-5px); } }
-
-    .chat-footer {
-      padding: 14px 24px; border-top: 1px solid var(--border);
-      background: var(--surface); display: flex; gap: 10px;
-      align-items: flex-end; flex-shrink: 0;
-    }
-    .chat-input-wrap { flex: 1; }
-    .chat-input-wrap textarea {
-      width: 100%; background: #fff; border: 1px solid var(--border);
-      color: var(--text); border-radius: 12px; padding: 12px 15px;
-      font-size: .9rem; resize: none; line-height: 1.5; max-height: 120px;
-      font-family: inherit; transition: border-color .15s;
-    }
-    .chat-input-wrap textarea:focus { outline: none; border-color: var(--accent); }
-    .chat-input-wrap textarea::placeholder { color: var(--muted); }
-    .send-btn {
-      background: linear-gradient(135deg, var(--accent), #1d4ed8); border: none;
-      color: #fff; width: 44px; height: 44px; border-radius: 12px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.1rem; flex-shrink: 0; transition: opacity .15s, transform .1s;
-    }
-    .send-btn:hover { opacity: .88; }
-    .send-btn:active { transform: scale(.94); }
-    .send-btn:disabled { opacity: .35; cursor: not-allowed; }
-
-    /* ── Toast ───────────────────────────────────────────── */
+    /* ══════════════════════════════════
+       TOAST
+    ══════════════════════════════════ */
     .toast {
-      position: fixed; bottom: 24px; left: 50%;
-      transform: translateX(-50%) translateY(20px);
-      background: var(--surface3); border: 1px solid var(--border);
-      color: var(--text); padding: 10px 20px; border-radius: 9px;
-      font-size: .87rem; box-shadow: var(--shadow);
-      opacity: 0; transition: opacity .25s, transform .25s;
-      pointer-events: none; z-index: 999; white-space: nowrap;
+      position: fixed; bottom: 20px; left: 50%;
+      transform: translateX(-50%) translateY(16px);
+      background: var(--text2); color: #fff;
+      padding: 9px 18px; border-radius: 8px;
+      font-size: 13px; box-shadow: var(--shadow-lg);
+      opacity: 0; pointer-events: none; z-index: 999;
+      transition: opacity .25s, transform .25s; white-space: nowrap;
     }
-    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    .toast.success { border-color: var(--success); }
-    .toast.error   { border-color: var(--danger); }
+    .toast.show    { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.success { background: #064E3B; }
+    .toast.error   { background: #7F1D1D; }
 
-    /* ── Scrollbar ───────────────────────────────────────── */
-    ::-webkit-scrollbar { width: 5px; }
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--border); }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 10px; }
 
-    /* ── Misc ────────────────────────────────────────────── */
     .hidden { display: none !important; }
-    .empty-grid {
-      grid-column: 1/-1; text-align: center; padding: 60px 20px;
-      color: var(--muted); font-size: .9rem;
-    }
   </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════════════════
-     VIEW: HOME
-══════════════════════════════════════════════════════ -->
-<div id="view-home" class="view active">
-  <div class="topbar">
-    <div class="topbar-left">
-      <div class="topbar-logo">
-        <div class="dot"></div>
-        RAG Summarizer
-      </div>
-    </div>
-    <div class="health-badge" id="healthBadge">
-      <div class="indicator"></div>
+<!-- ══════════════════════════════════════════
+     TOPBAR (always visible)
+══════════════════════════════════════════ -->
+<nav class="topbar">
+  <div class="brand" onclick="switchTab('chat')">
+    <div class="brand-icon">R</div>
+    RAG Summarizer
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" id="tab-chat"   onclick="switchTab('chat')">DocsQA</button>
+    <button class="nav-tab"        id="tab-spaces" onclick="switchTab('spaces')">Spaces</button>
+    <button class="nav-tab"        id="tab-hub"    onclick="switchTab('hub')">Data Hub</button>
+  </div>
+  <div class="topbar-right">
+    <div class="health-pill" id="healthBadge">
+      <div class="health-dot"></div>
       <span id="healthText">checking…</span>
     </div>
   </div>
+</nav>
 
-  <div class="home-body">
-    <div class="home-hero">
-      <h1>Your Spaces</h1>
-      <p>Each space is an isolated workspace for your documents. Create one to get started.</p>
+<!-- ══════════════════════════════════════════
+     PAGE 1: CHAT (DocsQA)
+══════════════════════════════════════════ -->
+<div class="page active" id="page-chat">
+
+  <!-- Sidebar -->
+  <aside class="chat-sidebar">
+
+    <div class="sb-section">
+      <span class="sb-label">Collection</span>
+      <select class="sb-select" id="chatSpaceSelect" onchange="onChatSpaceChange()">
+        <option value="">— select a space —</option>
+      </select>
     </div>
 
+    <div class="sb-section">
+      <span class="sb-label">Query Controller</span>
+      <div class="sb-value">example-app</div>
+    </div>
+
+    <div class="sb-section">
+      <span class="sb-label">Model</span>
+      <select class="sb-select" id="modelSelect">
+        <option value="default">default (ollama)</option>
+        <option value="llama3">llama3</option>
+        <option value="mistral">mistral</option>
+        <option value="phi3">phi3</option>
+        <option value="gemma">gemma</option>
+      </select>
+    </div>
+
+    <div class="sb-section">
+      <span class="sb-label">Model Configuration</span>
+      <textarea class="sb-code" id="modelConfig" rows="5">{
+  "parameters": {
+    "temperature": 0.7
+  }
+}</textarea>
+    </div>
+
+    <div class="sb-section">
+      <span class="sb-label">Retriever</span>
+      <select class="sb-select" id="retrievalMode">
+        <option value="hybrid" selected>multi-query with similarity score</option>
+        <option value="vector">vector similarity</option>
+        <option value="fts">full-text search</option>
+      </select>
+    </div>
+
+    <div class="sb-section">
+      <span class="sb-label">Context Chunks</span>
+      <select class="sb-select" id="contextLimit">
+        <option value="3">3 chunks</option>
+        <option value="5" selected>5 chunks</option>
+        <option value="8">8 chunks</option>
+        <option value="10">10 chunks</option>
+      </select>
+    </div>
+
+    <div class="sb-section">
+      <span class="sb-label">Retrievers Configuration</span>
+      <textarea class="sb-code" id="retrieverConfig" rows="9">{
+  "search_type": "similarity_score_threshold",
+  "search_kwargs": {
+    "score_threshold": 0.7
+  },
+  "retriever_llm_configuration": {
+    "name": "default",
+    "parameters": {}
+  }
+}</textarea>
+    </div>
+
+    <div class="sb-section">
+      <span class="sb-label">Prompt Template</span>
+      <textarea class="sb-code" id="promptTemplate" rows="6">Answer the question based only on the following context:
+
+Context: {context}
+
+Question: {question}</textarea>
+    </div>
+
+    <div class="sb-section">
+      <button class="btn ghost sm" style="width:100%;justify-content:center" onclick="clearChat()">Clear Chat</button>
+    </div>
+
+  </aside>
+
+  <!-- Chat Panel -->
+  <div class="chat-panel">
+
+    <!-- Messages -->
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-welcome" id="chatWelcome">
+        <div class="welcome-title">Welcome to DocsQA</div>
+        <div class="welcome-sub">
+          Select a collection from the sidebar,<br>
+          review all the settings and start asking Questions
+        </div>
+        <div class="welcome-how-label">How it works?</div>
+        <div class="how-works">
+          <div class="hw-step">
+            <div class="hw-box">&#128196;</div>
+            <div class="hw-label">Your Data</div>
+          </div>
+          <div class="hw-arrow">&#8594;</div>
+          <div class="hw-step">
+            <div class="hw-box">&#128269;</div>
+            <div class="hw-label">DocsQA</div>
+          </div>
+          <div class="hw-arrow">&#8594;</div>
+          <div class="hw-step">
+            <div class="hw-box">
+              <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+                <div style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:11px;font-weight:500">Query</div>
+                <div style="background:var(--primary);border-radius:4px;padding:4px 8px;font-size:11px;font-weight:600;color:#fff">Response</div>
+              </div>
+            </div>
+            <div class="hw-label">App</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Query input at BOTTOM -->
+    <div class="chat-query-bar">
+      <div class="chat-query-inner">
+        <input type="text" id="chatInput"
+          placeholder="Ask any question related to this document"
+          onkeydown="onChatKey(event)" />
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="Send (Enter)">&#10148;</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE 2: SPACES (Collections)
+══════════════════════════════════════════ -->
+<div class="page" id="page-spaces" style="max-width:1200px;width:100%;margin:0 auto;align-self:center">
+  <div style="padding:36px 28px 64px;width:100%">
+    <div class="page-header">
+      <div class="page-header-text">
+        <h1>Spaces</h1>
+        <p>Each space is an isolated workspace for your documents.</p>
+      </div>
+      <button class="btn" onclick="openCreateModal()">+ New Space</button>
+    </div>
     <div class="spaces-grid" id="spacesGrid">
-      <!-- "+ Create" card always first -->
       <div class="card-create" onclick="openCreateModal()">
         <div class="cc-icon">+</div>
-        <span>Create New Space</span>
+        <span class="cc-label">Create New Space</span>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════
-     VIEW: SPACE DETAIL
-══════════════════════════════════════════════════════ -->
-<div id="view-space" class="view">
-  <div class="topbar">
-    <div class="topbar-left">
-      <button class="back-btn" onclick="goHome()">&#8592; Home</button>
-      <div class="breadcrumb">
-        <span class="crumb-sep">/</span>
-        <span class="crumb-active" id="breadcrumbName">—</span>
-      </div>
-    </div>
-    <div class="health-badge" id="healthBadge2">
-      <div class="indicator"></div>
-      <span id="healthText2">checking…</span>
-    </div>
+<!-- ══════════════════════════════════════════
+     PAGE 3: DATA HUB (Upload + Vectorize)
+══════════════════════════════════════════ -->
+<div class="page" id="page-hub">
+
+  <!-- Space picker -->
+  <div class="hub-space-bar">
+    <label>Active Space:</label>
+    <select id="hubSpaceSelect" onchange="onHubSpaceChange()">
+      <option value="">— select a space —</option>
+    </select>
+    <button class="btn sm outline" onclick="openCreateModal()">+ New Space</button>
   </div>
 
-  <div class="space-body">
+  <!-- No space selected placeholder -->
+  <div class="hub-no-space" id="hubNoSpace">
+    <div class="ns-icon">&#128464;</div>
+    <p>Select a space above to upload and vectorize documents.</p>
+  </div>
 
-    <!-- Space header -->
-    <div class="space-page-header">
-      <div class="space-page-icon" id="spacePageIcon">?</div>
-      <div class="space-page-title">
-        <h2 id="spacePageName">—</h2>
-        <p id="spacePageSub">Upload documents, vectorize, then chat.</p>
-      </div>
-    </div>
+  <!-- Workflow (hidden until space selected) -->
+  <div class="hidden" id="hubWorkflow">
 
-    <!-- ── Step 1: Upload ── -->
-    <div class="section-card">
-      <div class="section-header">
-        <div class="step-num active" id="step1Num">1</div>
-        <div>
+    <!-- Step 1: Upload -->
+    <div class="wf-card">
+      <div class="wf-header">
+        <div class="step-badge active" id="step1Num">1</div>
+        <div class="wf-header-text">
           <h3>Upload Documents</h3>
-          <p>Drop Markdown files to chunk and index them</p>
+          <p>Drop Markdown or text files to chunk and index them</p>
         </div>
       </div>
-      <div class="section-body">
-        <div
-          class="drop-zone" id="dropZone"
+      <div class="wf-body">
+        <div class="drop-zone" id="dropZone"
           onclick="document.getElementById('fileInput').click()"
-          ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)"
-        >
+          ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
           <div class="dz-icon">&#8679;</div>
-          <div class="dz-text">Drag & drop files here, or click to browse</div>
+          <div class="dz-text">Drag &amp; drop files, or click to browse</div>
           <div class="dz-sub">Supports .md · .markdown · .txt</div>
           <input type="file" id="fileInput" multiple accept=".md,.markdown,.txt" onchange="addFiles(this.files)" />
         </div>
-
-        <div class="file-queue" id="fileQueue"></div>
-
-        <div class="upload-controls">
-          <select id="chunkStrategy">
+        <div class="file-list" id="fileQueue"></div>
+        <div class="upload-row">
+          <select class="form-select" id="chunkStrategy">
             <option value="recursive">Recursive — smart multi-level split (recommended)</option>
             <option value="semantic">Semantic — structure-aware</option>
             <option value="markdown_header">By Markdown Headers</option>
@@ -606,88 +811,62 @@
             <option value="sentence">By Sentences</option>
             <option value="fixed_size">Fixed Size</option>
           </select>
-          <button class="btn" id="uploadBtn" onclick="uploadFiles()">
-            &#8679; Upload &amp; Chunk
-          </button>
+          <button class="btn" id="uploadBtn" onclick="uploadFiles()">&#8679; Upload &amp; Chunk</button>
         </div>
-
         <div id="uploadResults"></div>
-
-        <!-- Shown after successful upload -->
         <div class="action-banner hidden" id="postUploadBanner">
           <div class="ab-text">
             <strong>Files uploaded successfully!</strong>
             <span>Vectorize your chunks so they can be searched semantically.</span>
           </div>
-          <button class="btn success-btn" onclick="scrollToVectorize(); embedAll(false)">
-            &#9889; Vectorize Now
-          </button>
+          <button class="btn success" onclick="scrollToVectorize(); embedAll(false)">&#9889; Vectorize Now</button>
         </div>
       </div>
     </div>
 
-    <!-- ── Step 2: Vectorize ── -->
-    <div class="section-card" id="vectorizeSection">
-      <div class="section-header">
-        <div class="step-num" id="step2Num">2</div>
-        <div>
+    <!-- Step 2: Vectorize -->
+    <div class="wf-card" id="vectorizeSection">
+      <div class="wf-header">
+        <div class="step-badge" id="step2Num">2</div>
+        <div class="wf-header-text">
           <h3>Vectorize Chunks</h3>
-          <p>Generate embeddings so your documents are searchable</p>
+          <p>Generate embeddings so your documents are semantically searchable</p>
         </div>
       </div>
-      <div class="section-body">
+      <div class="wf-body">
         <div class="stats-row">
-          <div class="stat-box">
-            <div class="stat-num" id="statChunks">–</div>
-            <div class="stat-label">Chunks</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-num" id="statVectors">–</div>
-            <div class="stat-label">Vectors</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-num" id="statPct">–</div>
-            <div class="stat-label">Embedded</div>
-          </div>
+          <div class="stat-box"><div class="stat-val" id="statChunks">–</div><div class="stat-lbl">Chunks</div></div>
+          <div class="stat-box"><div class="stat-val" id="statVectors">–</div><div class="stat-lbl">Vectors</div></div>
+          <div class="stat-box"><div class="stat-val" id="statPct">–</div><div class="stat-lbl">Embedded</div></div>
         </div>
-
-        <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
-        <div class="progress-label" id="progressLabel">Not yet vectorized</div>
-
-        <div class="vect-actions">
-          <button class="btn success-btn" id="embedBtn" onclick="embedAll(false)">
-            &#9889; Vectorize All Chunks
-          </button>
-          <button class="btn secondary" id="reEmbedBtn" onclick="embedAll(true)">
-            &#8635; Re-embed
-          </button>
-          <button class="btn secondary" onclick="refreshVectStats()">
-            Refresh
-          </button>
+        <div class="progress-track"><div class="progress-fill" id="progressBar"></div></div>
+        <div class="progress-lbl" id="progressLabel">Not yet vectorized</div>
+        <div class="vect-btns">
+          <button class="btn success" id="embedBtn" onclick="embedAll(false)">&#9889; Vectorize All Chunks</button>
+          <button class="btn outline"  id="reEmbedBtn" onclick="embedAll(true)">&#8635; Re-embed</button>
+          <button class="btn outline"  onclick="refreshVectStats()">Refresh</button>
         </div>
-        <div id="vectStatus" style="margin-top:10px;font-size:.83rem;color:var(--muted)"></div>
+        <div class="vect-status" id="vectStatus"></div>
       </div>
     </div>
 
-    <!-- ── Step 3: Chat CTA ── -->
-    <div class="section-card hidden" id="chatCtaSection">
-      <div class="section-header">
-        <div class="step-num done" id="step3Num">&#10003;</div>
-        <div>
+    <!-- Step 3: Chat CTA -->
+    <div class="wf-card hidden" id="chatCtaSection">
+      <div class="wf-header">
+        <div class="step-badge done">&#10003;</div>
+        <div class="wf-header-text">
           <h3>Ready to Chat</h3>
           <p>Your documents are indexed and ready for Q&amp;A</p>
         </div>
       </div>
-      <div class="section-body">
-        <div class="chat-cta-card">
+      <div class="wf-body">
+        <div class="cta-card">
           <div class="cta-icon">&#128172;</div>
-          <div class="cta-text">
+          <div class="cta-body">
             <h3>Ask questions about your documents</h3>
             <p>Use hybrid search (vector + full-text) to retrieve relevant context and get AI-powered answers and summaries.</p>
           </div>
-          <button class="btn large" onclick="goToChat()">
-            Open Chat &nbsp;&#8594;
-          </button>
+          <button class="btn" style="padding:10px 22px" onclick="openChatForActive()">Open Chat &#8594;</button>
         </div>
       </div>
     </div>
@@ -695,83 +874,20 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════
-     VIEW: CHAT
-══════════════════════════════════════════════════════ -->
-<div id="view-chat" class="view">
-  <div class="topbar">
-    <div class="topbar-left">
-      <button class="back-btn" onclick="goToSpace()">&#8592; Back to Space</button>
-      <div class="breadcrumb">
-        <span class="crumb-sep">/</span>
-        <span class="crumb-active" id="chatBreadcrumb">—</span>
-        <span class="crumb-sep">/</span>
-        <span class="crumb-active">Chat</span>
-      </div>
-    </div>
-    <div class="health-badge" id="healthBadge3">
-      <div class="indicator"></div>
-      <span id="healthText3">checking…</span>
-    </div>
-  </div>
-
-  <div class="chat-layout">
-    <div class="chat-options-bar">
-      <label>
-        Context chunks:
-        <select id="contextLimit">
-          <option value="3">3</option>
-          <option value="5" selected>5</option>
-          <option value="8">8</option>
-          <option value="10">10</option>
-        </select>
-      </label>
-      <label>
-        Search mode:
-        <select id="retrievalMode">
-          <option value="hybrid" selected>Hybrid</option>
-          <option value="vector">Vector</option>
-          <option value="fts">Full-text</option>
-        </select>
-      </label>
-      <div class="spacer"></div>
-      <button class="btn secondary" style="padding:5px 12px;font-size:.8rem" onclick="clearChat()">Clear Chat</button>
-    </div>
-
-    <div class="chat-messages" id="chatMessages">
-      <div class="chat-welcome" id="chatWelcome">
-        <div class="wl-icon">&#128172;</div>
-        <h3>Ask anything about your documents</h3>
-        <p>Try asking for a summary, specific facts, or comparisons between documents.</p>
-      </div>
-    </div>
-
-    <div class="chat-footer">
-      <div class="chat-input-wrap">
-        <textarea
-          id="chatInput" rows="1"
-          placeholder="Ask a question or request a summary…"
-          onkeydown="onChatKey(event)" oninput="autoResize(this)"
-        ></textarea>
-      </div>
-      <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="Send (Enter)">&#10148;</button>
-    </div>
-  </div>
-</div>
-
-<!-- ── Create Space Modal ─────────────────────────────── -->
+<!-- ══════════════════════════════════════════
+     CREATE SPACE MODAL
+══════════════════════════════════════════ -->
 <div class="modal-overlay" id="createModal" onclick="closeModalOnBg(event)">
   <div class="modal">
-    <h2>Create a New Space</h2>
-    <label for="newSpaceName">Space name</label>
-    <input
-      type="text" id="newSpaceName"
-      placeholder="e.g. Research Papers, Project Docs…"
-      onkeydown="if(event.key==='Enter') createSpace()"
-      autofocus
-    />
+    <div class="modal-title">Create a New Space</div>
+    <div class="form-group">
+      <label class="form-label" for="newSpaceName">Space name</label>
+      <input class="form-input" type="text" id="newSpaceName"
+        placeholder="e.g. Research Papers, Project Docs…"
+        onkeydown="if(event.key==='Enter') createSpace()" />
+    </div>
     <div class="modal-actions">
-      <button class="btn secondary" onclick="closeCreateModal()">Cancel</button>
+      <button class="btn outline" onclick="closeCreateModal()">Cancel</button>
       <button class="btn" onclick="createSpace()">Create Space</button>
     </div>
   </div>
@@ -780,63 +896,57 @@
 <div class="toast" id="toast"></div>
 
 <script>
-/* ── State ───────────────────────────────────────────── */
+/* ══════════════════════════════════
+   STATE
+══════════════════════════════════ */
 const API = '';
-let activeSpace = null; // { uuid, name }
+let allSpaces    = [];
+let activeSpace  = null; // { uuid, name }
 let pendingFiles = [];
 
-/* ── Init ────────────────────────────────────────────── */
+/* ══════════════════════════════════
+   INIT
+══════════════════════════════════ */
 window.addEventListener('DOMContentLoaded', () => {
   loadSpaces();
   checkHealth();
   setInterval(checkHealth, 15000);
 });
 
-/* ── View Navigation ─────────────────────────────────── */
-function showView(id) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById('view-' + id).classList.add('active');
+/* ══════════════════════════════════
+   TAB NAVIGATION
+══════════════════════════════════ */
+function switchTab(tab) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + tab).classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+
+  if (tab === 'spaces') loadSpaces();
+  if (tab === 'hub')    refreshHubSpaceList();
+  if (tab === 'chat')   refreshChatSpaceList();
 }
 
-function goHome() {
-  showView('home');
-  loadSpaces();
-}
-
-function goToSpace() {
-  showView('space');
-}
-
-function goToChat() {
-  if (!activeSpace) { toast('No space selected', 'error'); return; }
-  document.getElementById('chatBreadcrumb').textContent = activeSpace.name;
-  showView('chat');
-  updateHealthBadge(document.getElementById('healthBadge3'), document.getElementById('healthText3'));
-}
-
-function scrollToVectorize() {
-  document.getElementById('vectorizeSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-/* ── Health ──────────────────────────────────────────── */
-async function updateHealthBadge(badge, textEl) {
+/* ══════════════════════════════════
+   HEALTH
+══════════════════════════════════ */
+async function checkHealth() {
   try {
     const r = await fetch(`${API}/health`);
     const d = await r.json();
-    badge.className = 'health-badge ' + (d.status === 'ok' ? 'ok' : 'warn');
-    textEl.textContent = d.status === 'ok' ? `${d.model} · online` : 'ollama offline';
+    const pill = document.getElementById('healthBadge');
+    pill.className = 'health-pill ' + (d.status === 'ok' ? 'ok' : 'warn');
+    document.getElementById('healthText').textContent =
+      d.status === 'ok' ? `${d.model} · online` : 'ollama offline';
   } catch {
-    badge.className = 'health-badge';
-    textEl.textContent = 'server offline';
+    document.getElementById('healthBadge').className = 'health-pill';
+    document.getElementById('healthText').textContent = 'server offline';
   }
 }
 
-async function checkHealth() {
-  updateHealthBadge(document.getElementById('healthBadge'), document.getElementById('healthText'));
-  updateHealthBadge(document.getElementById('healthBadge2'), document.getElementById('healthText2'));
-}
-
-/* ── Modal ───────────────────────────────────────────── */
+/* ══════════════════════════════════
+   MODAL
+══════════════════════════════════ */
 function openCreateModal() {
   document.getElementById('createModal').classList.add('show');
   setTimeout(() => document.getElementById('newSpaceName').focus(), 100);
@@ -849,62 +959,136 @@ function closeModalOnBg(e) {
   if (e.target === document.getElementById('createModal')) closeCreateModal();
 }
 
-/* ── Spaces ──────────────────────────────────────────── */
+/* ══════════════════════════════════
+   SPACES
+══════════════════════════════════ */
 async function loadSpaces() {
   try {
     const r = await fetch(`${API}/spaces`);
     const d = await r.json();
-    renderSpaces(d.spaces || []);
+    allSpaces = d.spaces || [];
+    renderSpaces(allSpaces);
+    refreshChatSpaceList();
+    refreshHubSpaceList();
   } catch {
     document.getElementById('spacesGrid').innerHTML =
-      '<div class="card-create" onclick="openCreateModal()"><div class="cc-icon">+</div><span>Create New Space</span></div>' +
-      '<p class="empty-grid" style="grid-column:1/-1;color:var(--danger)">Could not load spaces.</p>';
+      '<div class="card-create" onclick="openCreateModal()"><div class="cc-icon">+</div><span class="cc-label">Create New Space</span></div>' +
+      '<div class="empty-state" style="color:var(--danger)"><div class="es-icon">⚠</div><p>Could not load spaces. Is the server running?</p></div>';
   }
 }
 
 function renderSpaces(spaces) {
   const grid = document.getElementById('spacesGrid');
-  const createCard = `
-    <div class="card-create" onclick="openCreateModal()">
-      <div class="cc-icon">+</div>
-      <span>Create New Space</span>
-    </div>`;
+  const createCard = `<div class="card-create" onclick="openCreateModal()"><div class="cc-icon">+</div><span class="cc-label">Create New Space</span></div>`;
 
   if (!spaces.length) {
     grid.innerHTML = createCard +
-      '<div class="empty-grid">No spaces yet — create your first one!</div>';
+      '<div class="empty-state"><div class="es-icon">📂</div><p>No spaces yet — create your first one!</p></div>';
     return;
   }
 
-  const cards = spaces.map(s => {
+  grid.innerHTML = createCard + spaces.map(s => {
     const letter = s.name.charAt(0).toUpperCase();
-    const chunks = s.chunk_count || 0;
+    const chunks = s.chunk_count  || 0;
     const vects  = s.vector_count || 0;
     return `
-      <div class="space-card" onclick="openSpace('${s.uuid}', '${esc(s.name)}')">
-        <div class="sc-header">
-          <div class="sc-icon">${letter}</div>
-          <button class="sc-delete" onclick="deleteSpace(event,'${s.uuid}')" title="Delete space">&#10005;</button>
+      <div class="space-card" onclick="openSpaceInHub('${s.uuid}','${esc(s.name)}')">
+        <div class="sc-top">
+          <div class="sc-avatar">${letter}</div>
+          <button class="sc-del" onclick="deleteSpace(event,'${s.uuid}')" title="Delete">✕</button>
         </div>
         <div>
           <div class="sc-name">${esc(s.name)}</div>
+          <div class="sc-desc">${chunks ? chunks + ' chunks indexed' : 'No documents yet'}</div>
         </div>
         <div class="sc-footer">
-          <div class="sc-badges">
-            ${chunks ? `<span class="badge purple">&#128196; ${chunks} chunks</span>` : '<span class="badge">No chunks</span>'}
-            ${vects  ? `<span class="badge green">&#9889; ${vects} vectors</span>` : ''}
+          <div class="sc-chips">
+            ${chunks ? `<span class="chip indigo">📄 ${chunks}</span>` : '<span class="chip">Empty</span>'}
+            ${vects  ? `<span class="chip green">⚡ ${vects}</span>` : ''}
           </div>
-          <span class="sc-open">Open &#8594;</span>
+          <span class="sc-arrow">Open →</span>
         </div>
       </div>`;
   }).join('');
+}
 
-  grid.innerHTML = createCard + cards;
+function refreshChatSpaceList() {
+  const sel = document.getElementById('chatSpaceSelect');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— select a space —</option>' +
+    allSpaces.map(s => `<option value="${s.uuid}"${s.uuid === cur ? ' selected' : ''}>${esc(s.name)}</option>`).join('');
+}
+
+function refreshHubSpaceList() {
+  const sel = document.getElementById('hubSpaceSelect');
+  const cur = activeSpace ? activeSpace.uuid : '';
+  sel.innerHTML = '<option value="">— select a space —</option>' +
+    allSpaces.map(s => `<option value="${s.uuid}"${s.uuid === cur ? ' selected' : ''}>${esc(s.name)}</option>`).join('');
+  if (cur) sel.value = cur;
+}
+
+function onChatSpaceChange() {
+  const sel = document.getElementById('chatSpaceSelect');
+  const uuid = sel.value;
+  if (!uuid) { activeSpace = null; return; }
+  const sp = allSpaces.find(s => s.uuid === uuid);
+  if (sp) activeSpace = { uuid: sp.uuid, name: sp.name };
+}
+
+function onHubSpaceChange() {
+  const sel = document.getElementById('hubSpaceSelect');
+  const uuid = sel.value;
+  if (!uuid) {
+    activeSpace = null;
+    document.getElementById('hubNoSpace').classList.remove('hidden');
+    document.getElementById('hubWorkflow').classList.add('hidden');
+    return;
+  }
+  const sp = allSpaces.find(s => s.uuid === uuid);
+  if (sp) setActiveSpace(sp.uuid, sp.name);
+}
+
+function openSpaceInHub(uuid, name) {
+  setActiveSpace(uuid, name);
+  switchTab('hub');
+}
+
+function setActiveSpace(uuid, name) {
+  activeSpace = { uuid, name };
+
+  // Sync hub selector
+  const sel = document.getElementById('hubSpaceSelect');
+  sel.value = uuid;
+
+  // Sync chat selector
+  const chatSel = document.getElementById('chatSpaceSelect');
+  chatSel.value = uuid;
+
+  // Reset upload UI
+  pendingFiles = [];
+  renderFileQueue();
+  document.getElementById('uploadResults').innerHTML = '';
+  document.getElementById('postUploadBanner').classList.add('hidden');
+  document.getElementById('fileInput').value = '';
+  document.getElementById('step1Num').className = 'step-badge active';
+  document.getElementById('step1Num').textContent = '1';
+
+  // Show workflow
+  document.getElementById('hubNoSpace').classList.add('hidden');
+  document.getElementById('hubWorkflow').classList.remove('hidden');
+
+  refreshVectStats();
+}
+
+function openChatForActive() {
+  if (!activeSpace) return;
+  document.getElementById('chatSpaceSelect').value = activeSpace.uuid;
+  switchTab('chat');
 }
 
 async function createSpace() {
   const input = document.getElementById('newSpaceName');
-  const name = input.value.trim();
+  const name  = input.value.trim();
   if (!name) { toast('Enter a space name', 'error'); return; }
   try {
     const r = await fetch(`${API}/spaces`, {
@@ -916,8 +1100,8 @@ async function createSpace() {
     const d = await r.json();
     closeCreateModal();
     toast('Space created!', 'success');
-    // Auto-open the newly created space
-    openSpace(d.uuid || d.space?.uuid, name);
+    await loadSpaces();
+    openSpaceInHub(d.uuid || d.space?.uuid, name);
   } catch (e) {
     toast(e.message || 'Failed to create space', 'error');
   }
@@ -928,36 +1112,19 @@ async function deleteSpace(evt, uuid) {
   if (!confirm('Delete this space and all its data?')) return;
   try {
     await fetch(`${API}/spaces/${uuid}`, { method: 'DELETE' });
-    if (activeSpace && activeSpace.uuid === uuid) activeSpace = null;
+    if (activeSpace && activeSpace.uuid === uuid) {
+      activeSpace = null;
+      document.getElementById('hubNoSpace').classList.remove('hidden');
+      document.getElementById('hubWorkflow').classList.add('hidden');
+    }
     await loadSpaces();
     toast('Space deleted');
   } catch { toast('Delete failed', 'error'); }
 }
 
-async function openSpace(uuid, name) {
-  activeSpace = { uuid, name };
-
-  // Update space page UI
-  document.getElementById('breadcrumbName').textContent = name;
-  document.getElementById('chatBreadcrumb').textContent = name;
-  document.getElementById('spacePageName').textContent = name;
-  document.getElementById('spacePageIcon').textContent = name.charAt(0).toUpperCase();
-
-  // Reset upload state
-  pendingFiles = [];
-  renderFileQueue();
-  document.getElementById('uploadResults').innerHTML = '';
-  document.getElementById('postUploadBanner').classList.add('hidden');
-  document.getElementById('fileInput').value = '';
-
-  showView('space');
-  updateHealthBadge(document.getElementById('healthBadge2'), document.getElementById('healthText2'));
-
-  // Load vectorize stats
-  await refreshVectStats();
-}
-
-/* ── Upload ──────────────────────────────────────────── */
+/* ══════════════════════════════════
+   UPLOAD
+══════════════════════════════════ */
 function onDragOver(e)  { e.preventDefault(); document.getElementById('dropZone').classList.add('drag-over'); }
 function onDragLeave(e) { document.getElementById('dropZone').classList.remove('drag-over'); }
 function onDrop(e)      { e.preventDefault(); onDragLeave(e); addFiles(e.dataTransfer.files); }
@@ -980,87 +1147,81 @@ function removeFile(name) {
 function renderFileQueue() {
   document.getElementById('fileQueue').innerHTML = pendingFiles.map(f => `
     <div class="file-row">
-      <span class="file-icon">&#128196;</span>
+      <span class="file-icon">📄</span>
       <span class="file-name">${esc(f.name)}</span>
       <span class="file-size">${(f.size / 1024).toFixed(1)} KB</span>
-      <button class="file-remove" onclick="removeFile('${esc(f.name)}')">&#10005;</button>
+      <button class="file-remove" onclick="removeFile('${esc(f.name)}')">✕</button>
     </div>`).join('');
 }
 
 async function uploadFiles() {
-  if (!activeSpace) { toast('No space selected', 'error'); return; }
+  if (!activeSpace)         { toast('Select a space first', 'error'); return; }
   if (!pendingFiles.length) { toast('Add files first', 'error'); return; }
 
   const btn = document.getElementById('uploadBtn');
   btn.disabled = true;
 
   const strategy = document.getElementById('chunkStrategy').value;
-  const results = [];
+  const results  = [];
   let totalChunks = 0;
 
   for (let i = 0; i < pendingFiles.length; i++) {
     const f = pendingFiles[i];
     btn.innerHTML = `<span class="spin"></span> Uploading ${i + 1}/${pendingFiles.length}…`;
-
-    const formData = new FormData();
-    formData.append('file', f);
-    formData.append('chunk_strategy', strategy);
-
+    const fd = new FormData();
+    fd.append('file', f);
+    fd.append('chunk_strategy', strategy);
     try {
-      const r = await fetch(`${API}/spaces/${activeSpace.uuid}/artifacts`, { method: 'POST', body: formData });
+      const r = await fetch(`${API}/spaces/${activeSpace.uuid}/artifacts`, { method: 'POST', body: fd });
       const d = await r.json();
       if (!r.ok) throw new Error(d.detail || `Upload failed: ${f.name}`);
       results.push(d);
       totalChunks += d.chunk_count || 0;
-    } catch (e) {
-      toast(e.message, 'error');
-    }
+    } catch (e) { toast(e.message, 'error'); }
   }
 
   if (!results.length) {
-    btn.disabled = false;
-    btn.innerHTML = '&#8679; Upload &amp; Chunk';
-    return;
+    btn.disabled = false; btn.innerHTML = '&#8679; Upload &amp; Chunk'; return;
   }
 
-  // Show result cards
   document.getElementById('uploadResults').innerHTML = results.map(a => `
-    <div class="result-card">
-      <div class="rc-title">&#10003; ${esc(a.file_name)}</div>
-      <div class="rc-detail">${a.chunk_count} chunks &nbsp;·&nbsp; artifact <code style="font-size:.8em;opacity:.7">${a.artifact_id.slice(0, 8)}…</code></div>
+    <div class="upload-result">
+      <div class="ur-name">✓ ${esc(a.file_name)}</div>
+      <div class="ur-detail">${a.chunk_count} chunks · <code style="font-size:.85em;opacity:.7">${a.artifact_id.slice(0,8)}…</code></div>
     </div>`).join('');
 
-  // Mark step 1 done
-  document.getElementById('step1Num').className = 'step-num done';
+  document.getElementById('step1Num').className   = 'step-badge done';
   document.getElementById('step1Num').textContent = '✓';
-
-  // Show "Vectorize Now" banner
   document.getElementById('postUploadBanner').classList.remove('hidden');
-
   pendingFiles = [];
   renderFileQueue();
   document.getElementById('fileInput').value = '';
   toast(`Uploaded ${results.length} file(s) — ${totalChunks} chunks`, 'success');
-
   await refreshVectStats();
+  await loadSpaces();
 
-  btn.disabled = false;
-  btn.innerHTML = '&#8679; Upload &amp; Chunk';
+  btn.disabled = false; btn.innerHTML = '&#8679; Upload &amp; Chunk';
 }
 
-/* ── Vectorize ───────────────────────────────────────── */
+/* ══════════════════════════════════
+   VECTORIZE
+══════════════════════════════════ */
+function scrollToVectorize() {
+  document.getElementById('vectorizeSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 async function refreshVectStats() {
   if (!activeSpace) return;
   try {
-    const [chunksR, vectsR] = await Promise.all([
+    const [cr, vr] = await Promise.all([
       fetch(`${API}/spaces/${activeSpace.uuid}/artifacts`),
       fetch(`${API}/spaces/${activeSpace.uuid}/vectors`)
     ]);
-    const chunksD = await chunksR.json();
-    const vectsD  = await vectsR.json();
+    const cd = await cr.json();
+    const vd = await vr.json();
 
-    const totalChunks  = (chunksD.artifacts || []).reduce((s, a) => s + a.chunk_count, 0);
-    const totalVectors = vectsD.total || 0;
+    const totalChunks  = (cd.artifacts || []).reduce((s, a) => s + a.chunk_count, 0);
+    const totalVectors = vd.total || 0;
     const pct = totalChunks ? Math.round(totalVectors / totalChunks * 100) : 0;
 
     document.getElementById('statChunks').textContent  = totalChunks;
@@ -1072,12 +1233,9 @@ async function refreshVectStats() {
       pct === 0   ? 'No vectors yet — click Vectorize' :
                     `${totalVectors} / ${totalChunks} chunks vectorized`;
 
-    // Show/hide sections based on state
-    if (totalChunks > 0) {
-      document.getElementById('step2Num').className = 'step-num active';
-    }
+    if (totalChunks > 0) document.getElementById('step2Num').className = 'step-badge active';
     if (pct === 100) {
-      document.getElementById('step2Num').className = 'step-num done';
+      document.getElementById('step2Num').className   = 'step-badge done';
       document.getElementById('step2Num').textContent = '✓';
       document.getElementById('chatCtaSection').classList.remove('hidden');
     } else {
@@ -1089,25 +1247,23 @@ async function refreshVectStats() {
 
 async function embedAll(reEmbed = false) {
   if (!activeSpace) return;
-  const btn = reEmbed ? document.getElementById('reEmbedBtn') : document.getElementById('embedBtn');
+  const btn = document.getElementById(reEmbed ? 'reEmbedBtn' : 'embedBtn');
   btn.disabled = true;
   btn.innerHTML = '<span class="spin"></span> Embedding…';
-  document.getElementById('vectStatus').textContent = 'Generating embeddings, please wait…';
+  document.getElementById('vectStatus').textContent = 'Generating embeddings…';
 
   try {
     const r = await fetch(`${API}/spaces/${activeSpace.uuid}/vectors/embed`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      method: 'POST', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ re_embed: reEmbed })
     });
     const d = await r.json();
     if (!r.ok) throw new Error(d.detail);
-
-    document.getElementById('vectStatus').textContent =
-      `${d.chunks_embedded} embedded · ${d.chunks_skipped} skipped`;
+    document.getElementById('vectStatus').textContent = `${d.chunks_embedded} embedded · ${d.chunks_skipped} skipped`;
     document.getElementById('postUploadBanner').classList.add('hidden');
     toast(d.message || 'Vectorization complete', 'success');
     await refreshVectStats();
+    await loadSpaces();
   } catch (e) {
     document.getElementById('vectStatus').textContent = '';
     toast(e.message || 'Embedding failed', 'error');
@@ -1117,49 +1273,53 @@ async function embedAll(reEmbed = false) {
   }
 }
 
-/* ── Chat ────────────────────────────────────────────── */
+/* ══════════════════════════════════
+   CHAT
+══════════════════════════════════ */
 function onChatKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-}
-
-function autoResize(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  if (e.key === 'Enter') { e.preventDefault(); sendMessage(); }
 }
 
 function clearChat() {
   document.getElementById('chatMessages').innerHTML = `
     <div class="chat-welcome" id="chatWelcome">
-      <div class="wl-icon">&#128172;</div>
-      <h3>Ask anything about your documents</h3>
-      <p>Try asking for a summary, specific facts, or comparisons between documents.</p>
+      <div class="welcome-title">Welcome to DocsQA</div>
+      <div class="welcome-sub">Select a collection from the sidebar,<br>review all the settings and start asking Questions</div>
+      <div class="welcome-how-label">How it works?</div>
+      <div class="how-works">
+        <div class="hw-step"><div class="hw-box">&#128196;</div><div class="hw-label">Your Data</div></div>
+        <div class="hw-arrow">&#8594;</div>
+        <div class="hw-step"><div class="hw-box">&#128269;</div><div class="hw-label">DocsQA</div></div>
+        <div class="hw-arrow">&#8594;</div>
+        <div class="hw-step">
+          <div class="hw-box"><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><div style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:11px;font-weight:500">Query</div><div style="background:var(--primary);border-radius:4px;padding:4px 8px;font-size:11px;font-weight:600;color:#fff">Response</div></div></div>
+          <div class="hw-label">App</div>
+        </div>
+      </div>
     </div>`;
 }
 
 function appendMsg(role, content, sources) {
-  const wrap = document.getElementById('chatMessages');
+  const wrap    = document.getElementById('chatMessages');
   const welcome = document.getElementById('chatWelcome');
   if (welcome) welcome.remove();
 
   const isUser = role === 'user';
-  let sourcesHtml = '';
+  let srcHtml  = '';
   if (sources && sources.length) {
     const chips = sources.map(s => {
       const name = esc(s.file_name || s.file || 'unknown');
       const aid  = esc(s.artifact_id || '');
-      return `<span class="source-chip" onclick="downloadArtifact('${aid}','${name}')" title="Download ${name}">&#8681; ${name}</span>`;
-    }).join(' ');
-    sourcesHtml = `<div class="msg-sources">
-      <div class="msg-sources-label">Sources</div>
-      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">${chips}</div>
-    </div>`;
+      return `<span class="src-chip" onclick="downloadArtifact('${aid}','${name}')" title="${name}">&#8681; ${name}</span>`;
+    }).join('');
+    srcHtml = `<div class="msg-sources"><div class="src-label">Sources</div><div class="src-chips">${chips}</div></div>`;
   }
 
   const id = 'msg-' + Date.now();
   wrap.insertAdjacentHTML('beforeend', `
     <div class="msg-row ${isUser ? 'user' : 'ai'}" id="${id}">
       <div class="msg-avatar">${isUser ? 'U' : 'AI'}</div>
-      <div class="msg-bubble">${fmtText(content)}${sourcesHtml}</div>
+      <div class="msg-bubble">${fmtText(content)}${srcHtml}</div>
     </div>`);
   wrap.scrollTop = wrap.scrollHeight;
   return id;
@@ -1167,6 +1327,8 @@ function appendMsg(role, content, sources) {
 
 function addTypingIndicator() {
   const wrap = document.getElementById('chatMessages');
+  const welcome = document.getElementById('chatWelcome');
+  if (welcome) welcome.remove();
   const id = 'typing-' + Date.now();
   wrap.insertAdjacentHTML('beforeend', `
     <div class="msg-row ai" id="${id}">
@@ -1178,7 +1340,13 @@ function addTypingIndicator() {
 }
 
 async function sendMessage() {
-  if (!activeSpace) { toast('No space selected', 'error'); return; }
+  const selUuid = document.getElementById('chatSpaceSelect').value;
+  if (!selUuid) { toast('Select a collection first', 'error'); return; }
+  if (!activeSpace || activeSpace.uuid !== selUuid) {
+    const sp = allSpaces.find(s => s.uuid === selUuid);
+    if (sp) activeSpace = { uuid: sp.uuid, name: sp.name };
+  }
+
   const input = document.getElementById('chatInput');
   const msg = input.value.trim();
   if (!msg) return;
@@ -1186,20 +1354,21 @@ async function sendMessage() {
   const sendBtn = document.getElementById('sendBtn');
   sendBtn.disabled = true;
   input.value = '';
-  input.style.height = 'auto';
 
   appendMsg('user', msg);
   const typingId = addTypingIndicator();
 
   try {
     const r = await fetch(`${API}/spaces/${activeSpace.uuid}/generate`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      method: 'POST', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
         query: msg,
         context_limit: parseInt(document.getElementById('contextLimit').value),
         retrieval_mode: document.getElementById('retrievalMode').value,
-        temperature: 0.7
+        temperature: (() => {
+          try { return JSON.parse(document.getElementById('modelConfig').value)?.parameters?.temperature ?? 0.7; }
+          catch { return 0.7; }
+        })()
       })
     });
     const d = await r.json();
@@ -1214,7 +1383,9 @@ async function sendMessage() {
   }
 }
 
-/* ── Download ────────────────────────────────────────── */
+/* ══════════════════════════════════
+   DOWNLOAD
+══════════════════════════════════ */
 function downloadArtifact(artifactId, fileName) {
   if (!activeSpace || !artifactId) return;
   const a = document.createElement('a');
@@ -1225,7 +1396,9 @@ function downloadArtifact(artifactId, fileName) {
   document.body.removeChild(a);
 }
 
-/* ── Utilities ───────────────────────────────────────── */
+/* ══════════════════════════════════
+   UTILITIES
+══════════════════════════════════ */
 function esc(str) {
   return String(str)
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
@@ -1236,14 +1409,14 @@ function fmtText(str) {
   return esc(str)
     .replace(/\n/g, '<br>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/`([^`]+)`/g, '<code style="background:var(--surface3);padding:1px 5px;border-radius:4px;font-size:.87em">$1</code>');
+    .replace(/`([^`]+)`/g, '<code style="background:var(--surface2);padding:1px 5px;border-radius:4px;font-size:.87em;color:var(--text)">$1</code>');
 }
 
 let _toastTimer;
 function toast(msg, type = '') {
   const el = document.getElementById('toast');
   el.textContent = msg;
-  el.className = 'toast show ' + type;
+  el.className   = 'toast show ' + type;
   clearTimeout(_toastTimer);
   _toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
 }
