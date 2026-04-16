@@ -52,8 +52,6 @@ Built for the **"Bootstrap of RAG"** workshop by **Kuruba Harish** (April 3rd, 2
 - **Python 3.10+**
 - **Ollama** — For running local LLMs
 
-### Step 1 — Clone the repository
-
 ```bash
 git clone https://github.com/your-username/rag-summarizer.git
 cd rag-summarizer
